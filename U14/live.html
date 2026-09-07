@@ -4,13 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1,user-scalable=no">
 <meta name="theme-color" content="#07101f">
-<title>ASM70 · Live Stats</title>
+<title>ASM70 · Live Stats V2</title>
 <link rel="stylesheet" href="./live.css">
+<link rel="stylesheet" href="./live-v2.css">
 </head>
 <body>
 <div id="setupView" class="setup">
   <div class="setupCard">
-    <div class="setupHead"><h1>ASM70 · Live Stats</h1><p>Segnapunti rapido pensato per la panchina: numero → azione → fatto.</p></div>
+    <div class="setupHead"><h1>ASM70 · Live Stats V2</h1><p>Numero → azione → fatto. Ora anche per gli avversari, con cronologia completa.</p></div>
     <div class="setupBody">
       <div class="formgrid">
         <div class="field full"><label>Partita dal calendario U14</label><select id="gameSelect"><option value="">Partita manuale</option></select></div>
@@ -19,12 +20,20 @@
         <div class="field"><label>Campo</label><select id="homeAway"><option value="home">Casa</option><option value="away">Trasferta</option></select></div>
         <div class="field"><label>Durata quarto</label><select id="periodLen"><option value="600">10:00</option><option value="480">8:00</option></select></div>
       </div>
+
       <div class="rosterSetup">
-        <div style="display:flex;justify-content:space-between;gap:8px;align-items:center"><b>Roster partita</b><span id="loadStatus" style="font-size:10px;color:#728198">caricamento…</span></div>
+        <div class="setupSectionHead"><b>Roster ASM70</b><span id="loadStatus">caricamento…</span></div>
         <div id="rosterGrid" class="rosterGrid"></div>
         <div class="addPlayer"><input id="newNum" inputmode="numeric" placeholder="#"><input id="newName" placeholder="Nome giocatore"><button id="addPlayer">Aggiungi</button></div>
-        <div style="font-size:10px;color:#7a8798;margin-top:8px">I giocatori vengono letti dal roster U14 online. Puoi aggiungerne anche solo per questa app.</div>
       </div>
+
+      <div class="rosterSetup oppSetup">
+        <div class="setupSectionHead"><b>Numeri avversari</b><span>manuali per questa partita</span></div>
+        <div class="oppQuickAdd"><input id="oppNumbers" inputmode="numeric" placeholder="Es. 4, 5, 7, 8, 10, 11, 12"><button id="buildOpp">Carica numeri</button></div>
+        <div id="oppRosterPreview" class="oppRosterPreview"></div>
+        <div class="setupNote">Basta inserire i numeri di maglia separati da virgola o spazio. Non vengono aggiunti al roster ASM70.</div>
+      </div>
+
       <div class="setupActions"><button id="resumeBtn" class="subtleBtn hidden">Riprendi partita</button><button id="startBtn" class="startBtn">Inizia partita</button></div>
     </div>
   </div>
@@ -35,41 +44,58 @@
     <div class="scorebar">
       <div class="teamBox"><div><div id="teamNameTop" class="teamName">ASM70</div><div id="ourScore" class="score homeScore">0</div></div></div>
       <div class="scoreCenter"><button id="periodBtn" class="period">Q1</button><div id="clock" class="clock">10:00</div><button id="clockBtn" class="clockBtn">▶</button></div>
-      <div class="teamBox away"><div style="text-align:right"><div id="oppNameTop" class="teamName">AVVERSARI</div><div id="oppScore" class="score">0</div></div></div>
+      <div class="teamBox away"><div style="text-align:right"><div id="oppNameTop" class="teamName">AVVERSARI</div><div id="oppScore" class="score oppScoreColor">0</div></div></div>
     </div>
-    <div class="nav"><button data-tab="live" class="on">Partita</button><button data-tab="stats">Statistiche</button><button id="setupBack">Impostazioni</button><button id="newGame" class="red">Nuova partita</button></div>
+    <div class="nav"><button data-tab="live" class="on">Partita</button><button data-tab="history">Cronologia</button><button data-tab="stats">Statistiche</button><button id="setupBack">Impostazioni</button><button id="newGame" class="red">Nuova partita</button></div>
   </div>
 
   <main class="content">
     <section id="tabLive">
-      <div class="livegrid">
-        <div class="panel">
-          <div class="panelHead"><div class="panelTitle">Quintetto in campo</div><div class="courtHead"><span id="teamFouls" class="foulBadge">Falli squadra Q1: 0</span><button id="quickUndo" class="miniBtn">↶ Annulla</button></div></div>
-          <div id="courtPlayers" class="players"></div>
-          <div class="benchLabel">Panchina</div><div id="benchPlayers" class="bench"></div>
-        </div>
-        <div class="panel events">
-          <div class="panelHead"><div class="panelTitle">Cronologia azioni</div><button id="clearEvents" class="miniBtn red">Azzera cronologia</button></div>
-          <div id="eventList" class="eventList"></div>
-          <div class="oppControls"><button data-opp="1">Avv +1</button><button data-opp="2">Avv +2</button><button data-opp="3">Avv +3</button><button class="undo" id="oppMinus">Avv −1</button></div>
-        </div>
+      <div class="panel">
+        <div class="panelHead"><div class="panelTitle">ASM70 · quintetto in campo</div><div class="courtHead"><span id="teamFouls" class="foulBadge">Falli squadra Q1: 0</span><button id="quickUndo" class="miniBtn">↶ Annulla</button></div></div>
+        <div id="courtPlayers" class="players"></div>
+        <div class="benchLabel">Panchina</div><div id="benchPlayers" class="bench"></div>
+      </div>
+
+      <div class="panel opponentPanel">
+        <div class="panelHead"><div><div class="panelTitle">Avversari · tocca il numero che ha fatto l’azione</div><div class="panelSub">Il punteggio avversario nasce dalle azioni registrate sui numeri.</div></div><div class="courtHead"><span id="oppFouls" class="foulBadge blueBadge">Falli avversari Q1: 0</span><button id="addOppInGame" class="miniBtn">+ numero</button></div></div>
+        <div id="oppPlayers" class="oppPlayers"></div>
+        <div class="unknownScore"><span>Se non riesci a vedere il numero:</span><button data-opp-unknown="1">#? +1</button><button data-opp-unknown="2">#? +2</button><button data-opp-unknown="3">#? +3</button></div>
+      </div>
+
+      <div class="quickHistory panel">
+        <div class="panelHead"><div><div class="panelTitle">Principio</div><div class="panelSub">Tocca un numero → scegli l’azione → la cronologia si aggiorna da sola.</div></div><button class="miniBtn" data-tab-jump="history">Vedi cronologia</button></div>
+      </div>
+    </section>
+
+    <section id="tabHistory" class="hidden">
+      <div class="panel historyPanel">
+        <div class="panelHead"><div><div class="panelTitle">Cronologia completa della partita</div><div class="panelSub">Quarto, tempo, squadra, numero, azione e punteggio dopo ogni evento.</div></div><div class="statsTop"><button id="historyUndo" class="miniBtn">↶ Annulla ultima</button><button id="exportHistory" class="miniBtn orange">Esporta cronologia</button><button id="clearEvents" class="miniBtn red">Azzera</button></div></div>
+        <div class="historyHead"><span>Tempo</span><span>Squadra</span><span>#</span><span>Azione</span><span>Score</span></div>
+        <div id="eventList" class="eventList fullHistory"></div>
       </div>
     </section>
 
     <section id="tabStats" class="hidden">
       <div class="panel">
-        <div class="panelHead"><div><div class="panelTitle">Statistiche partita</div><div id="statsScore" style="font-size:18px;font-weight:1000;margin-top:3px"></div></div><div class="statsTop"><button id="exportCsv" class="miniBtn orange">Esporta CSV</button></div></div>
+        <div class="panelHead"><div><div class="panelTitle">Statistiche partita</div><div id="statsScore" class="statsScore"></div></div><div class="statsTop"><button id="exportCsv" class="miniBtn orange">Esporta CSV</button></div></div>
+        <div class="statsSectionTitle">ASM70</div>
         <div class="statsWrap"><table class="statsTable"><thead><tr><th>Giocatore</th><th>MIN</th><th>PT</th><th>TL</th><th>2PT</th><th>3PT</th><th>RD</th><th>RO</th><th>RT</th><th>AST</th><th>REC</th><th>PR</th><th>BLK</th><th>F</th><th>FS</th></tr></thead><tbody id="statsBody"></tbody></table></div>
+        <div class="statsSectionTitle oppTitle">Avversari</div>
+        <div class="statsWrap"><table class="statsTable oppStatsTable"><thead><tr><th>Numero</th><th>PT</th><th>TL</th><th>2PT</th><th>3PT</th><th>RT</th><th>AST</th><th>REC</th><th>PR</th><th>BLK</th><th>F</th></tr></thead><tbody id="oppStatsBody"></tbody></table></div>
       </div>
     </section>
   </main>
 </div>
 
-<div id="actionBack" class="sheetBack hidden"><div class="sheet"><div class="sheetTop"><div class="sheetPlayer"><div id="sheetNum" class="sheetNum">0</div><div><div id="sheetName" class="sheetName">Giocatore</div><div id="sheetMini" style="font-size:10px;color:#91a1b7;margin-top:3px"></div></div></div><button id="closeSheet" class="close">×</button></div><div id="actions" class="actions"></div></div></div>
-<div id="subBack" class="sheetBack hidden"><div class="sheet"><div class="sheetTop"><div><div class="sheetName">Cambio</div><div id="subTitle" style="font-size:10px;color:#91a1b7;margin-top:3px"></div></div><button id="closeSub" class="close">×</button></div><div id="subGrid" class="subGrid"></div></div></div>
+<div id="actionBack" class="sheetBack hidden"><div class="sheet"><div class="sheetTop"><div class="sheetPlayer"><div id="sheetNum" class="sheetNum">0</div><div><div id="sheetName" class="sheetName">Giocatore</div><div id="sheetMini" class="sheetMini"></div></div></div><button id="closeSheet" class="close">×</button></div><div id="actions" class="actions"></div></div></div>
+<div id="subBack" class="sheetBack hidden"><div class="sheet"><div class="sheetTop"><div><div class="sheetName">Cambio</div><div id="subTitle" class="sheetMini"></div></div><button id="closeSub" class="close">×</button></div><div id="subGrid" class="subGrid"></div></div></div>
 <div id="toast" class="toast hidden"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="./live.js"></script>
+<script src="./live-v2.js"></script>
+<script>
+document.querySelectorAll('[data-tab-jump]').forEach(b=>b.onclick=()=>{const target=b.dataset.tabJump;const tab=document.querySelector(`.nav [data-tab="${target}"]`);if(tab)tab.click()});
+</script>
 </body>
 </html>
