@@ -1,10 +1,75 @@
 <!doctype html><html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#0f172a"><title>ASM70 U14 Admin</title><style>
 body{margin:0;font-family:system-ui;background:#eef2f7;color:#142033}.app{max-width:1050px;margin:auto;padding:12px}.hero{background:linear-gradient(135deg,#0f172a,#155eef);color:#fff;border-radius:20px;padding:20px}.card{background:#fff;border:1px solid #dde5ee;border-radius:15px;padding:14px;margin-top:12px}.row{display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap}.btn{border:1px solid #dde5ee;background:#fff;border-radius:10px;padding:9px 12px;font-weight:800;cursor:pointer}.blue{background:#155eef;color:#fff}.danger{background:#fff1f2;color:#be123c}.grid{display:grid;grid-template-columns:1.4fr .8fr;gap:12px}.list{display:grid;gap:8px}.item{border:1px solid #dde5ee;border-radius:11px;padding:10px}.fields{display:grid;grid-template-columns:1fr 1fr;gap:8px}.full{grid-column:1/-1}label{display:block;font-size:10px;text-transform:uppercase;color:#68768a;font-weight:800;margin-bottom:4px}input,select,textarea{width:100%;box-sizing:border-box;padding:9px;border:1px solid #cdd7e3;border-radius:9px}textarea{min-height:70px}.hidden{display:none!important}.mut{color:#68768a;font-size:12px}.conv{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;max-height:240px;overflow:auto}.ck{display:flex;gap:7px;align-items:center;border:1px solid #dde5ee;border-radius:9px;padding:7px}.ck input{width:auto}dialog{width:min(720px,calc(100vw - 18px));border:0;border-radius:16px;padding:0}.dh{padding:12px 14px;border-bottom:1px solid #dde5ee;font-weight:900}.db{padding:14px}@media(max-width:800px){.grid{grid-template-columns:1fr}.fields{grid-template-columns:1fr}.full{grid-column:auto}.conv{grid-template-columns:1fr}}
-</style></head><body><div class="app"><section id="login" class="card" style="max-width:520px;margin:45px auto"><h2>Accesso responsabile U14</h2><p class="mut">Accedi con l'email e la password che hai già registrato e confermato in Supabase.</p><label>Email</label><input id="email" type="email"><label style="margin-top:8px">Password</label><input id="pwd" type="password"><div class="row" style="margin-top:10px"><button class="btn blue" id="signin">Accedi</button></div><p class="mut" id="msg"></p></section><div id="panel" class="hidden"><header class="hero"><div class="row"><div><h1 id="title" style="margin:0">ASM70 U14</h1><div>Gestione calendario, convocati e risultati</div></div><div><button class="btn" id="newGame">+ Partita</button> <button class="btn" id="logout">Esci</button></div></div></header><div class="grid"><section class="card"><div class="row"><h2>Partite</h2><button class="btn blue" id="newGame2">+ Nuova</button></div><div class="list" id="games"></div></section><aside><section class="card"><div class="row"><h2>Roster</h2><button class="btn blue" id="newPlayer">+ Ragazzo</button></div><div class="list" id="players"></div></section></aside></div></div></div>
+</style></head><body><div class="app"><section id="login" class="card" style="max-width:520px;margin:45px auto"><h2>Accesso responsabile U14</h2><p class="mut">Accedi con l'email e la password che hai già registrato e confermato in Supabase.</p><label>Email</label><input id="email" type="email"><label style="margin-top:8px">Password</label><input id="pwd" type="password"><div class="row" style="margin-top:10px"><button class="btn blue" id="signin">Accedi</button></div><p class="mut" id="msg">Admin v4 REST: pronto.</p></section><div id="panel" class="hidden"><header class="hero"><div class="row"><div><h1 id="title" style="margin:0">ASM70 U14</h1><div>Gestione calendario, convocati e risultati</div></div><div><button class="btn" id="newGame">+ Partita</button> <button class="btn" id="logout">Esci</button></div></div></header><div class="grid"><section class="card"><div class="row"><h2>Partite</h2><button class="btn blue" id="newGame2">+ Nuova</button></div><div class="list" id="games"></div></section><aside><section class="card"><div class="row"><h2>Roster</h2><button class="btn blue" id="newPlayer">+ Ragazzo</button></div><div class="list" id="players"></div></section></aside></div></div></div>
 <dialog id="gdlg"><div class="dh">Partita</div><div class="db"><div class="fields"><div><label>Data</label><input id="gd" type="date"></div><div><label>Ora</label><input id="gt" type="time"></div><div><label>Avversario</label><input id="go"></div><div><label>Casa/Trasferta</label><select id="gs"><option value="home">Casa</option><option value="away">Trasferta</option></select></div><div><label>Palestra</label><input id="gv"></div><div><label>Indirizzo</label><input id="ga"></div><div><label>Ritrovo</label><input id="gm" type="time"></div><div><label>Partenza</label><input id="gp" type="time"></div><div><label>Stato</label><select id="gst"><option value="confirmed">Confermata</option><option value="tbc">Da confermare</option><option value="postponed">Rinviata</option><option value="cancelled">Annullata</option><option value="played">Giocata</option></select></div><div><label>Giornata</label><input id="gr"></div><div><label>Punti ASM70</label><input id="gu" type="number"></div><div><label>Punti avversario</label><input id="gx" type="number"></div><div class="full"><label>Note</label><textarea id="gn"></textarea></div></div><h3>Convocati</h3><div class="conv" id="conv"></div><div class="row" style="margin-top:10px"><button class="btn danger" id="delg">Elimina</button><div><button class="btn" id="cancelg">Annulla</button> <button class="btn blue" id="saveg">Salva</button></div></div></div></dialog>
 <dialog id="pdlg"><div class="dh">Ragazzo</div><div class="db"><label>Nome</label><input id="pn"><label style="margin-top:8px">Numero maglia</label><input id="pnum" type="number"><div class="row" style="margin-top:10px"><button class="btn" id="cancelp">Annulla</button><button class="btn blue" id="savep">Salva</button></div></div></dialog>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script>
-const URL='https://gtiescrhzsctcyfjuixq.supabase.co',KEY='sb_publishable_W1Ygs4iWPPv8UUTtjUMetA_TA14SEc-',db=window.supabase.createClient(URL,KEY),$=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];let D={settings:null,players:[],games:[],callups:[]},EG=null,EP=null;const e=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c])),df=s=>{let a=s.split('-').map(Number);return new Date(a[0],a[1]-1,a[2],12)};
+<script>
+function createLiteClient(BASE, KEY){
+  const SK='u14_lite_session_v1';
+  let session=null;
+  try{session=JSON.parse(localStorage.getItem(SK)||'null')}catch(e){}
+  const h=(auth=true)=>({'apikey':KEY,'Content-Type':'application/json',...(auth&&session?.access_token?{'Authorization':'Bearer '+session.access_token}:{})});
+  async function refresh(){
+    if(!session?.refresh_token) return false;
+    try{
+      const r=await fetch(BASE+'/auth/v1/token?grant_type=refresh_token',{method:'POST',headers:h(false),body:JSON.stringify({refresh_token:session.refresh_token}),cache:'no-store'});
+      if(!r.ok)return false; session=await r.json(); localStorage.setItem(SK,JSON.stringify(session)); return true;
+    }catch(e){return false}
+  }
+  async function req(url,opt={},retry=true){
+    let r=await fetch(BASE+url,{...opt,headers:{...h(true),...(opt.headers||{})},cache:'no-store'});
+    if(r.status===401&&retry&&await refresh()) return req(url,opt,false);
+    return r;
+  }
+  class Q{
+    constructor(table){this.table=table;this.mode='select';this.filters=[];this.orders=[];this.cols='*';this.payload=null;this.one=false;}
+    select(c='*'){this.cols=c;return this}
+    eq(k,v){this.filters.push([k,v]);return this}
+    order(k,o={}){this.orders.push([k,o.ascending!==false]);return this}
+    single(){this.one=true;return this}
+    update(x){this.mode='update';this.payload=x;return this}
+    insert(x){this.mode='insert';this.payload=x;return this}
+    delete(){this.mode='delete';return this}
+    then(ok,ko){return this.run().then(ok,ko)}
+    async run(){
+      try{
+        let qs=[]; if(this.cols)qs.push('select='+encodeURIComponent(this.cols));
+        this.filters.forEach(([k,v])=>qs.push(encodeURIComponent(k)+'=eq.'+encodeURIComponent(v)));
+        if(this.orders.length)qs.push('order='+this.orders.map(([k,a])=>encodeURIComponent(k)+'.'+(a?'asc':'desc')).join(','));
+        let url='/rest/v1/'+this.table+(qs.length?'?'+qs.join('&'):'');
+        let opt={method:'GET'}, prefer='';
+        if(this.mode==='update'){opt.method='PATCH';opt.body=JSON.stringify(this.payload);prefer=this.cols?'return=representation':'return=minimal'}
+        else if(this.mode==='insert'){opt.method='POST';opt.body=JSON.stringify(this.payload);prefer=this.cols?'return=representation':'return=minimal'}
+        else if(this.mode==='delete'){opt.method='DELETE';prefer='return=minimal'}
+        if(prefer)opt.headers={'Prefer':prefer};
+        const r=await req(url,opt);
+        if(!r.ok){let er={message:'HTTP '+r.status};try{er=await r.json()}catch(e){};return {data:null,error:{message:er.message||er.msg||er.error_description||('HTTP '+r.status)}}}
+        if(r.status===204)return {data:null,error:null};
+        const t=await r.text();let data=t?JSON.parse(t):null;
+        if(this.one&&Array.isArray(data))data=data[0]??null;
+        return {data,error:null};
+      }catch(e){return {data:null,error:{message:e.message||String(e)}}}
+    }
+  }
+  return {
+    auth:{
+      async signInWithPassword({email,password}){
+        try{const r=await fetch(BASE+'/auth/v1/token?grant_type=password',{method:'POST',headers:h(false),body:JSON.stringify({email,password}),cache:'no-store'});const j=await r.json();if(!r.ok)return {data:null,error:{message:j.error_description||j.msg||j.message||'Accesso non riuscito'}};session=j;localStorage.setItem(SK,JSON.stringify(j));return {data:{session:j,user:j.user},error:null}}catch(e){return {data:null,error:{message:e.message}}}
+      },
+      async getUser(){
+        if(!session?.access_token)return {data:{user:null},error:{message:'No session'}};
+        try{let r=await req('/auth/v1/user',{method:'GET'});if(!r.ok)return {data:{user:null},error:{message:'Sessione non valida'}};return {data:{user:await r.json()},error:null}}catch(e){return {data:{user:null},error:{message:e.message}}}
+      },
+      async signOut(){session=null;localStorage.removeItem(SK);return {error:null}},
+      onAuthStateChange(){return {data:{subscription:{unsubscribe(){}}}}}
+    },
+    from(t){return new Q(t)},
+    rpc(name,args={}){return (async()=>{try{const r=await req('/rest/v1/rpc/'+name,{method:'POST',body:JSON.stringify(args)});if(!r.ok){let j={};try{j=await r.json()}catch(e){};return {data:null,error:{message:j.message||('HTTP '+r.status)}}}const x=await r.text();return {data:x?JSON.parse(x):null,error:null}}catch(e){return {data:null,error:{message:e.message}}}})()}
+  }
+}
+</script>
+<script>
+const URL='https://gtiescrhzsctcyfjuixq.supabase.co',KEY='sb_publishable_W1Ygs4iWPPv8UUTtjUMetA_TA14SEc-',db=createLiteClient(URL,KEY),$=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];let D={settings:null,players:[],games:[],callups:[]},EG=null,EP=null;const e=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c])),df=s=>{let a=s.split('-').map(Number);return new Date(a[0],a[1]-1,a[2],12)};
 async function ready(){const {data:{user},error}=await db.auth.getUser();if(error||!user){$('#login').classList.remove('hidden');$('#panel').classList.add('hidden');return}$('#msg').textContent='';$('#login').classList.add('hidden');$('#panel').classList.remove('hidden');await load()}
 async function load(){let [s,p,g,c]=await Promise.all([db.from('team_settings').select('*').eq('id',1).single(),db.from('players').select('*').order('display_order').order('name'),db.from('games').select('*').order('game_date'),db.from('game_callups').select('*')]);let er=s.error||p.error||g.error||c.error;if(er){alert(er.message);return}D={settings:s.data,players:p.data||[],games:g.data||[],callups:c.data||[]};render()}
 function render(){$('#title').textContent=D.settings.team_name+' · '+D.settings.season;let gb=$('#games');gb.innerHTML='';D.games.forEach(g=>{let x=document.createElement('div');x.className='item';x.innerHTML='<b>'+df(g.game_date).toLocaleDateString('it-IT')+' · '+(g.game_time?String(g.game_time).slice(0,5):'')+'</b><br>'+e(g.opponent)+' · '+(g.home_away==='home'?'Casa':'Trasferta')+(g.score_us!==null?' · '+g.score_us+'-'+g.score_them:'')+'<br><button class="btn" style="margin-top:6px">Modifica</button>';x.querySelector('button').onclick=()=>openG(g.id);gb.appendChild(x)});if(!gb.children.length)gb.innerHTML='<div class="mut">Nessuna partita.</div>';let pb=$('#players');pb.innerHTML='';D.players.filter(p=>p.active).forEach(p=>{let x=document.createElement('div');x.className='item';x.innerHTML='<b>'+(p.jersey_number!==null?'#'+p.jersey_number+' · ':'')+e(p.name)+'</b><br><button class="btn" style="margin-top:6px">Modifica</button> <button class="btn danger" style="margin-top:6px">Togli</button>';x.children[1].onclick=()=>openP(p.id);x.children[2].onclick=()=>removeP(p.id);pb.appendChild(x)});if(!pb.children.length)pb.innerHTML='<div class="mut">Roster vuoto.</div>'}
