@@ -1,5 +1,39 @@
 let db=null;
-async function initDb(){try{const t=await fetch('./index.html',{cache:'no-store'}).then(r=>r.text()),u=t.match(/const URL='([^']+)'/),k=t.match(/KEY='([^']+)'/);if(u&&k&&window.supabase)db=window.supabase.createClient(u[1],k[1])}catch(e){db=null}}
+const SUPABASE_URL='https://gtiescrhzsctcyfjuixq.supabase.co';
+const SUPABASE_KEY='sb_publishable_W1Ygs4iWPPv8UUTtjUMetA_TA14SEc-';
+
+function createPublicClient(BASE,KEY){
+  class Q{
+    constructor(table){this.table=table;this.cols='*';this.filters=[];this.orders=[];this.max=null;this.one=false}
+    select(c='*'){this.cols=c;return this}
+    eq(k,v){this.filters.push([k,v]);return this}
+    order(k,o={}){this.orders.push([k,o.ascending!==false]);return this}
+    limit(n){this.max=Number(n)||null;return this}
+    single(){this.one=true;return this}
+    then(ok,ko){return this.run().then(ok,ko)}
+    async run(){
+      try{
+        let qs=['select='+encodeURIComponent(this.cols)];
+        this.filters.forEach(([k,v])=>qs.push(encodeURIComponent(k)+'=eq.'+encodeURIComponent(v)));
+        if(this.orders.length)qs.push('order='+this.orders.map(([k,a])=>encodeURIComponent(k)+'.'+(a?'asc':'desc')).join(','));
+        if(this.max)qs.push('limit='+this.max);
+        const r=await fetch(BASE+'/rest/v1/'+this.table+'?'+qs.join('&'),{
+          headers:{apikey:KEY},
+          cache:'no-store'
+        });
+        if(!r.ok)return {data:null,error:{message:'HTTP '+r.status}};
+        let data=await r.json();
+        if(this.one&&Array.isArray(data))data=data[0]??null;
+        return {data,error:null};
+      }catch(e){return {data:null,error:{message:e.message||String(e)}}}
+    }
+  }
+  return {from:t=>new Q(t)}
+}
+async function initDb(){
+  try{db=createPublicClient(SUPABASE_URL,SUPABASE_KEY)}
+  catch(e){db=null}
+}
 const STORE='asm70_live_stats_v2',ROSTER_STORE='asm70_live_roster_v1';
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 let online={settings:null,players:[],games:[],callups:[]};
