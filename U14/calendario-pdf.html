@@ -78,6 +78,7 @@ function render(settings,games){
       '<td>'+esc(g.round_label||'')+'</td>'+
       '<td class="date">'+df(g.game_date).toLocaleDateString('it-IT',{weekday:'short',day:'2-digit',month:'2-digit',year:'numeric'})+'</td>'+
       '<td class="time">'+esc(String(g.game_time||'').slice(0,5))+'</td>'+
+      '<td class="status"><strong>'+(g.home_away==='home'?'Casa':'Trasferta')+'</strong></td>'+
       '<td class="game">'+esc(gameName(g))+'</td>'+
       '<td class="place">'+venue(g)+'</td>'+
       '<td class="result">'+result(g)+'</td>'+
@@ -91,7 +92,7 @@ function render(settings,games){
       '<div class="sub">Stagione '+esc(settings.season||'2026/27')+' · Calendario campionato</div>'+
     '</div>'+
     '<div class="notice">Calendario derivato dal calendario FIP provvisorio. Le gare non ancora confermate possono subire variazioni di data e/o orario.</div>'+
-    '<table><thead><tr><th>N. gara</th><th>Giornata</th><th>Data</th><th>Ora</th><th>Gara</th><th class="place">Campo</th><th>Ris.</th><th>Stato</th></tr></thead><tbody>'+rows+'</tbody></table>'+
+    '<table><thead><tr><th>N. gara</th><th>Giornata</th><th>Data</th><th>Ora</th><th>Sede</th><th>Gara</th><th class="place">Campo</th><th>Ris.</th><th>Stato</th></tr></thead><tbody>'+rows+'</tbody></table>'+
     '<div class="foot"><span>ASM70 U14 · Calendario genitori</span><span>Aggiornato: '+new Date().toLocaleDateString('it-IT')+'</span></div>';
 }
 async function load(){
