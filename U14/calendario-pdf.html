@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0f172a">
+<title>ASM70 U14 · Calendario PDF</title>
+<style>
+:root{--ink:#111827;--mut:#64748b;--line:#cbd5e1;--blue:#155eef;--soft:#f8fafc}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#eef2f7;color:var(--ink)}
+.toolbar{position:sticky;top:0;z-index:3;display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:center;padding:10px;background:#0f172a}
+.toolbar button,.toolbar a{border:0;border-radius:9px;padding:10px 13px;font:inherit;font-weight:800;text-decoration:none;cursor:pointer;background:#fff;color:#0f172a}
+.toolbar .primary{background:#3b82f6;color:#fff}
+.sheet{width:min(100%,210mm);min-height:297mm;margin:14px auto;background:white;padding:15mm 13mm;box-shadow:0 10px 30px rgba(15,23,42,.12)}
+.head{text-align:center;border-bottom:2px solid #111827;padding-bottom:9px;margin-bottom:12px}
+.fip{font-size:10px;letter-spacing:.12em;font-weight:800}
+h1{font-size:22px;margin:7px 0 3px}
+.sub{font-size:12px;color:#334155;line-height:1.5}
+.notice{margin:10px 0;padding:8px 10px;background:#fff7ed;border:1px solid #fed7aa;border-radius:7px;font-size:10px;font-weight:700}
+table{width:100%;border-collapse:collapse;font-size:10px}
+th,td{border:1px solid #94a3b8;padding:6px 5px;vertical-align:middle}
+th{background:#e2e8f0;text-transform:uppercase;font-size:9px;letter-spacing:.03em}
+td.num,td.date,td.time,td.result,td.status{text-align:center;white-space:nowrap}
+td.game{font-weight:700}
+td.place{font-size:9px;line-height:1.35}
+.played td{background:#f8fafc}
+.result strong{font-size:12px}
+.status .done{font-weight:900}
+.status .tbc{color:#92400e;font-weight:900}
+.status .ok{color:#166534;font-weight:900}
+.foot{display:flex;justify-content:space-between;gap:10px;margin-top:12px;padding-top:8px;border-top:1px solid #cbd5e1;font-size:9px;color:#64748b}
+.loading{text-align:center;padding:30px;color:#64748b}
+@page{size:A4 portrait;margin:8mm}
+@media(max-width:700px){.sheet{margin:0;width:100%;min-height:0;padding:16px 8px;box-shadow:none}.head h1{font-size:18px}table{font-size:8.5px}th,td{padding:5px 3px}.place{display:none}}
+@media print{
+  body{background:#fff}
+  .toolbar{display:none!important}
+  .sheet{width:auto;min-height:0;margin:0;padding:0;box-shadow:none}
+  .notice{break-inside:avoid}
+  tr{break-inside:avoid}
+}
+</style>
+</head>
+<body>
+<div class="toolbar">
+  <a href="./">← Calendario</a>
+  <button class="primary" id="printBtn">📄 Stampa / Salva PDF</button>
+</div>
+<main class="sheet" id="sheet"><div class="loading">Caricamento calendario…</div></main>
+<script>
+const BASE='https://gtiescrhzsctcyfjuixq.supabase.co/rest/v1';
+const KEY='sb_publishable_W1Ygs4iWPPv8UUTtjUMetA_TA14SEc-';
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+const df=s=>{let a=String(s).split('-').map(Number);return new Date(a[0],a[1]-1,a[2],12)};
+async function api(path){const r=await fetch(BASE+path,{headers:{apikey:KEY},cache:'no-store'});if(!r.ok)throw new Error('HTTP '+r.status+' '+await r.text());return r.json()}
+function gameName(g){return g.home_away==='home'?'MORBEGNO 70 – '+g.opponent:g.opponent+' – MORBEGNO 70'}
+function result(g){
+  if(g.score_us===null||g.score_us===undefined||g.score_them===null||g.score_them===undefined)return '—';
+  return g.home_away==='home'
+    ? '<strong>'+g.score_us+' - '+g.score_them+'</strong>'
+    : '<strong>'+g.score_them+' - '+g.score_us+'</strong>';
+}
+function status(g){
+  if(g.score_us!==null&&g.score_us!==undefined&&g.score_them!==null&&g.score_them!==undefined)return '<span class="done">GIOCATA</span>';
+  if(g.status==='confirmed')return '<span class="ok">CONFERMATA</span>';
+  if(g.status==='postponed')return '<span class="tbc">RINVIATA</span>';
+  if(g.status==='cancelled')return '<span class="tbc">ANNULLATA</span>';
+  return '<span class="tbc">DA CONFERMARE</span>';
+}
+function venue(g){return [g.venue,g.address].filter(Boolean).map(esc).join('<br>')}
+function render(settings,games){
+  const rows=games.map(g=>{
+    const played=(g.score_us!==null&&g.score_us!==undefined&&g.score_them!==null&&g.score_them!==undefined);
+    return '<tr class="'+(played?'played':'')+'">'+
+      '<td class="num">'+esc(g.fip_game_no||'')+'</td>'+
+      '<td>'+esc(g.round_label||'')+'</td>'+
+      '<td class="date">'+df(g.game_date).toLocaleDateString('it-IT',{weekday:'short',day:'2-digit',month:'2-digit',year:'numeric'})+'</td>'+
+      '<td class="time">'+esc(String(g.game_time||'').slice(0,5))+'</td>'+
+      '<td class="game">'+esc(gameName(g))+'</td>'+
+      '<td class="place">'+venue(g)+'</td>'+
+      '<td class="result">'+result(g)+'</td>'+
+      '<td class="status">'+status(g)+'</td>'+
+    '</tr>';
+  }).join('');
+  $('#sheet').innerHTML=
+    '<div class="head">'+
+      '<div class="fip">UNDER 14 MASCHILE REGIONALE · GIRONE I</div>'+
+      '<h1>MORBEGNO 70 · ASM70 U14</h1>'+
+      '<div class="sub">Stagione '+esc(settings.season||'2026/27')+' · Calendario campionato</div>'+
+    '</div>'+
+    '<div class="notice">Calendario derivato dal calendario FIP provvisorio. Le gare non ancora confermate possono subire variazioni di data e/o orario.</div>'+
+    '<table><thead><tr><th>N. gara</th><th>Giornata</th><th>Data</th><th>Ora</th><th>Gara</th><th class="place">Campo</th><th>Ris.</th><th>Stato</th></tr></thead><tbody>'+rows+'</tbody></table>'+
+    '<div class="foot"><span>ASM70 U14 · Calendario genitori</span><span>Aggiornato: '+new Date().toLocaleDateString('it-IT')+'</span></div>';
+}
+async function load(){
+  try{
+    let settings=await api('/team_settings?select=*&id=eq.1');
+    let s=settings[0]||{season:'2026/27'};
+    let season=encodeURIComponent(s.season||'2026/27');
+    let games=await api('/games?select=*&season=eq.'+season+'&fip_game_no=not.is.null&order=game_date.asc,game_time.asc');
+    render(s,games||[]);
+  }catch(e){
+    console.error(e);$('#sheet').innerHTML='<div class="loading">Errore nel caricamento del calendario.</div>';
+  }
+}
+$('#printBtn').onclick=()=>window.print();
+load();
+</script>
+</body>
+</html>
