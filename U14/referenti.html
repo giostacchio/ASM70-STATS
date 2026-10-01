@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0f172a"><title>ASM70 U14 · Referenti</title>
+<style>
+:root{--bg:#eef2f7;--p:#fff;--ink:#142033;--mut:#68768a;--line:#dbe4ee;--nav:#0f172a;--blue:#155eef;--green:#15803d;--amber:#b45309;--shadow:0 10px 28px rgba(15,23,42,.08)}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,sans-serif;background:linear-gradient(#dfe7ef,#f8fafc 300px,#eef2f7);color:var(--ink)}
+.app{max-width:1100px;margin:auto;padding:12px}.hero{background:linear-gradient(135deg,#0f172a,#164e63 65%,#155eef);color:white;border-radius:22px;padding:20px;box-shadow:var(--shadow)}
+.hero h1{margin:0;font-size:clamp(28px,6vw,42px)}.hero p{margin:6px 0 0;color:#dbeafe}.bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:12px 0}
+.btn,a.btn{border:1px solid var(--line);background:white;color:var(--ink);border-radius:10px;padding:9px 12px;font-weight:850;text-decoration:none;cursor:pointer}.btn.blue{background:var(--blue);color:white;border-color:var(--blue)}.btn.wa{background:#dcfce7;color:#166534;border-color:#bbf7d0}.btn.call{background:#e0f2fe;color:#075985}
+.card{background:white;border:1px solid var(--line);border-radius:16px;padding:14px;box-shadow:var(--shadow)}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px}
+h2{margin:18px 0 10px}.team{font-size:18px;font-weight:950}.mut{color:var(--mut);font-size:12px}.who{margin:8px 0;font-weight:850}.meta{font-size:12px;line-height:1.55;color:#475569}
+.games{margin-top:9px;display:grid;gap:6px}.g{border-radius:10px;background:#f8fafc;border:1px solid #e2e8f0;padding:8px;font-size:12px}.tbc{color:var(--amber);font-weight:900}
+.actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}.search{width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:12px;font:inherit;background:white}
+#login{max-width:520px;margin:50px auto}.fields{display:grid;gap:8px}.fields input{width:100%;padding:11px;border:1px solid #cbd5e1;border-radius:10px;font:inherit}.hidden{display:none!important}.count{font-size:12px;color:var(--mut);font-weight:800}
+.current{border-top:4px solid var(--blue)}.tag{display:inline-block;font-size:10px;font-weight:900;border-radius:999px;padding:4px 7px;background:#eff6ff;color:#1d4ed8;margin-left:6px}
+@media(max-width:560px){.app{padding:7px}.hero{border-radius:18px;padding:17px 14px}}
+</style></head><body><div class="app">
+<section id="login" class="card"><h2>Accesso responsabile U14</h2><p class="mut">I numeri dei referenti sono visibili solo nell'area riservata.</p>
+<div class="fields"><input id="email" type="email" placeholder="Email"><input id="pwd" type="password" placeholder="Password"></div>
+<div class="bar"><button class="btn blue" id="signin">Accedi</button><span class="mut" id="msg"></span></div></section>
+
+<div id="panel" class="hidden">
+<header class="hero"><h1>ASM70 U14 · Referenti</h1><p>Girone I in primo piano + archivio completo U14 Lombardia 2026/27</p></header>
+<div class="bar"><a class="btn" href="./admin.html">← Admin</a><a class="btn" href="./">Calendario genitori</a><button class="btn" id="logout">Esci</button><span class="count" id="status"></span></div>
+
+<h2>Da contattare per il Girone I</h2><div class="grid" id="current"></div>
+
+<h2>Archivio completo referenti U14 <span class="count" id="total"></span></h2>
+<input class="search" id="q" type="search" placeholder="Cerca squadra, città, referente…">
+<div class="grid" id="archive" style="margin-top:10px"></div>
+</div></div>
+<script>
+const BASE='https://gtiescrhzsctcyfjuixq.supabase.co',KEY='sb_publishable_W1Ygs4iWPPv8UUTtjUMetA_TA14SEc-',SK='u14_lite_session_v1';
+let session=null,C=[],G=[];try{session=JSON.parse(localStorage.getItem(SK)||'null')}catch(e){}
+const $=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+const opponents=['CARPE DIEM BASKET','G.S. GIOVANILE CIVATESE','BASKET LECCO','BASKET CLUB TIRANO'];
+async function refresh(){if(!session?.refresh_token)return false;const r=await fetch(BASE+'/auth/v1/token?grant_type=refresh_token',{method:'POST',headers:{apikey:KEY,'Content-Type':'application/json'},body:JSON.stringify({refresh_token:session.refresh_token}),cache:'no-store'});if(!r.ok)return false;session=await r.json();localStorage.setItem(SK,JSON.stringify(session));return true}
+async function af(path,retry=true){let r=await fetch(BASE+path,{headers:{apikey:KEY,'Authorization':'Bearer '+session.access_token},cache:'no-store'});if(r.status===401&&retry&&await refresh())return af(path,false);if(!r.ok)throw new Error('HTTP '+r.status+' '+await r.text());return r.json()}
+async function signin(){msg.textContent='Accesso…';const r=await fetch(BASE+'/auth/v1/token?grant_type=password',{method:'POST',headers:{apikey:KEY,'Content-Type':'application/json'},body:JSON.stringify({email:email.value.trim(),password:pwd.value}),cache:'no-store'});const j=await r.json();if(!r.ok){msg.textContent=j.error_description||j.message||'Accesso non riuscito';return}session=j;localStorage.setItem(SK,JSON.stringify(j));await ready()}
+function phoneDigits(p){let d=String(p||'').replace(/\D/g,'');if(d.startsWith('39')&&d.length>10)return d;return '39'+d}
+function dateIt(s){let a=s.split('-').map(Number),d=new Date(a[0],a[1]-1,a[2],12);return d.toLocaleDateString('it-IT',{weekday:'short',day:'2-digit',month:'2-digit',year:'numeric'})}
+function related(team){return G.filter(g=>g.opponent===team)}
+function fixture(g){return g.home_away==='home'?'MORBEGNO 70 - '+g.opponent:g.opponent+' - MORBEGNO 70'}
+function message(c){let gs=related(c.team_name),g=gs[0];let line=g?fixture(g)+' del '+dateIt(g.game_date)+' alle '+String(g.game_time||'').slice(0,5):c.team_name;return 'Buongiorno '+c.contact_name+', sono Giorgio di Morbegno 70 U14. Ti contatto per organizzare la gara '+line+', indicata nel calendario FIP provvisorio. Mi confermi se data e orario possono andare bene? Grazie.'}
+function gamesHtml(c){let gs=related(c.team_name);if(!gs.length)return '';return '<div class="games">'+gs.map(g=>'<div class="g"><b>'+esc(fixture(g))+'</b><br>'+dateIt(g.game_date)+' · '+String(g.game_time||'').slice(0,5)+' <span class="tbc">· DA CONFERMARE</span></div>').join('')+'</div>'}
+function card(c,isCurrent=false){let tel=phoneDigits(c.phone),wa='https://wa.me/'+tel+'?text='+encodeURIComponent(message(c));return '<article class="card '+(isCurrent?'current':'')+'"><div class="team">'+esc(c.team_name)+(isCurrent?'<span class="tag">'+esc(c.city)+'</span>':'')+'</div><div class="who">'+esc(c.contact_name)+' · '+esc(c.phone)+'</div><div class="meta">Casa: '+esc(c.game_day)+' '+esc(c.game_time)+'<br>'+esc(c.venue)+'</div>'+gamesHtml(c)+'<div class="actions"><a class="btn wa" target="_blank" href="'+wa+'">WhatsApp</a><a class="btn call" href="tel:+'+tel+'">Chiama</a></div></article>'}
+function render(){let cur=opponents.map(n=>C.find(c=>c.team_name===n)).filter(Boolean);current.innerHTML=cur.map(c=>card(c,true)).join('');total.textContent='('+C.length+')';filter()}
+function filter(){let t=q.value.trim().toLowerCase(),z=C.filter(c=>!t||(c.team_name+' '+c.city+' '+c.contact_name+' '+c.phone).toLowerCase().includes(t));archive.innerHTML=z.map(c=>card(c,false)).join('')}
+async function load(){status.textContent='Aggiornamento…';[C,G]=await Promise.all([af('/rest/v1/u14_contacts?select=*&season=eq.2026%2F27&order=team_name.asc'),af('/rest/v1/games?select=*&season=eq.2026%2F27&fip_game_no=not.is.null&order=game_date.asc,game_time.asc')]);render();status.textContent='Aggiornato '+new Date().toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'})}
+async function ready(){if(!session?.access_token){login.classList.remove('hidden');panel.classList.add('hidden');return}try{await af('/auth/v1/user');login.classList.add('hidden');panel.classList.remove('hidden');await load()}catch(e){localStorage.removeItem(SK);session=null;login.classList.remove('hidden');panel.classList.add('hidden');msg.textContent='Sessione scaduta. Accedi di nuovo.'}}
+signin.onclick=signin;logout.onclick=()=>{localStorage.removeItem(SK);session=null;location.reload()};q.oninput=filter;ready();
+</script></body></html>
