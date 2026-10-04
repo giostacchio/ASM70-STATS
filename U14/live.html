@@ -34,6 +34,11 @@
         <div class="setupNote">Basta inserire i numeri di maglia separati da virgola o spazio. Non vengono aggiunti al roster ASM70.</div>
       </div>
 
+      <div class="rosterSetup">
+        <div class="setupSectionHead"><b>Storico partite salvate</b><button id="backupArchive" class="miniBtn orange">Backup storico JSON</button></div>
+        <div id="savedGames"><div class="setupNote">Nessuna partita salvata.</div></div>
+      </div>
+
       <div class="setupActions"><button id="resumeBtn" class="subtleBtn hidden">Riprendi partita</button><button id="startBtn" class="startBtn">Inizia partita</button></div>
     </div>
   </div>
@@ -46,7 +51,7 @@
       <div class="scoreCenter"><button id="periodBtn" class="period">Q1</button><div id="clock" class="clock">10:00</div><button id="clockBtn" class="clockBtn">▶</button></div>
       <div class="teamBox away"><div style="text-align:right"><div id="oppNameTop" class="teamName">AVVERSARI</div><div id="oppScore" class="score oppScoreColor">0</div></div></div>
     </div>
-    <div class="nav"><button data-tab="live" class="on">Partita</button><button data-tab="history">Cronologia</button><button data-tab="stats">Statistiche</button><button id="setupBack">Impostazioni</button><button id="newGame" class="red">Nuova partita</button></div>
+    <div class="nav"><button data-tab="live" class="on">Partita</button><button data-tab="history">Cronologia</button><button data-tab="stats">Statistiche</button><button id="setupBack">Impostazioni</button><button id="finishGame">🏁 Fine / Salva</button><button id="newGame" class="red">Nuova partita</button></div>
   </div>
 
   <main class="content">
@@ -92,7 +97,7 @@
 <div id="subBack" class="sheetBack hidden"><div class="sheet"><div class="sheetTop"><div><div class="sheetName">Cambio</div><div id="subTitle" class="sheetMini"></div></div><button id="closeSub" class="close">×</button></div><div id="subGrid" class="subGrid"></div></div></div>
 <div id="toast" class="toast hidden"></div>
 
-<script src="./live-v2.js?v=20260921-1"></script>
+<script src="./live-v2.js?v=20261004-savegames-1"></script>
 <script>
 document.querySelectorAll('[data-tab-jump]').forEach(b=>b.onclick=()=>{const target=b.dataset.tabJump;const tab=document.querySelector(`.nav [data-tab="${target}"]`);if(tab)tab.click()});
 </script>
