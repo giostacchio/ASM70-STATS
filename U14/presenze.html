@@ -15,7 +15,7 @@
 </style>
 </head>
 <body>
-<header><div class="header-inner"><div><h1>🏀 ASM70 U14 — Foglio Presenze</h1><div class="subtitle">Stagione 2026/27 · salvataggio automatico sul dispositivo</div></div><button class="primary" onclick="openEventModal()">+ Data</button></div></header>
+<header><div class="header-inner"><div><h1>🏀 ASM70 U14 — Foglio Presenze</h1><div class="subtitle">Stagione 2026/27 · backup online protetto + copia sul dispositivo</div></div><button class="primary" onclick="openEventModal()">+ Data</button></div></header>
 <main>
 <div class="topnav">
 <button id="navAttendance" class="navbtn active" onclick="showPage('attendance')">📋 Presenze</button>
@@ -79,4 +79,5 @@ function exportCSV(){const rows=[['Giocatore',...state.events.map(e=>fmtDate(e.d
 function download(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),500)}
 $('eventModal').addEventListener('click',e=>{if(e.target.id==='eventModal')closeEventModal()});$('statusModal').addEventListener('click',e=>{if(e.target.id==='statusModal')closeStatusModal()});load();
 </script>
+<script src="./presenze-cloud.js?v=1"></script>
 </body></html>
