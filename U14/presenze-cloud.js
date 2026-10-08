@@ -9,7 +9,7 @@ const CLOUD_COPY=KEY+'_cloud_copy_v1';
 let session=null, ready=false, saving=false, pending=false, uploadTimer=null, remoteId=null, remoteSnapshot=null, conflict=false;
 const originalPersist=persist;
 const $c=id=>document.getElementById(id);
-const dataString=()=>JSON.stringify(state);
+const dataString=()=>JSON.stringify({...state,settings:{convocationSlots:settings.convocationSlots}});
 const nonEmpty=s=>!!(s && ((s.players||[]).length || (s.events||[]).length || Object.keys(s.attendance||{}).length));
 const idString=()=>typeof crypto!=='undefined' && crypto.randomUUID ? crypto.randomUUID() : 'backup_'+Date.now()+'_'+Math.random().toString(36).slice(2);
 const escapeText=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -42,7 +42,10 @@ function adoptRemote(row){
     // Copia di recupero sul dispositivo; un eventuale export manuale è sempre possibile.
     try {localStorage.setItem(KEY+'_rescue_'+Date.now(),dataString());}catch(e){}
   }
-  state=JSON.parse(JSON.stringify(row.snapshot));
+  const restored=JSON.parse(JSON.stringify(row.snapshot));
+  if(restored.settings){settings={...settings,...restored.settings};localStorage.setItem(SETTINGS_KEY,JSON.stringify(settings));}
+  delete restored.settings;
+  state=restored;
   originalPersist();
   renderAll();
   remoteId=row.id;
@@ -179,6 +182,8 @@ function changed(){
   else if(!conflict)status('⚠️ Dati solo locali · accesso online necessario','bad');
 }
 persist=function(){originalPersist();changed();};
+const originalSetSlots=setConvocationSlots;
+setConvocationSlots=function(v){originalSetSlots(v);changed();};
 async function signIn(){
   const email=$c('cloudEmail').value.trim(),password=$c('cloudPassword').value;
   const msg=$c('cloudLoginMessage');
@@ -218,7 +223,9 @@ async function openHistory(){
         try{
           const top=await latest();
           if(top && top.id!==remoteId){remoteSnapshot=top;hideHistory();showConflict();return;}
-          state=JSON.parse(JSON.stringify(row.snapshot));originalPersist();renderAll();
+          const restored=JSON.parse(JSON.stringify(row.snapshot));
+          if(restored.settings){settings={...settings,...restored.settings};localStorage.setItem(SETTINGS_KEY,JSON.stringify(settings));}
+          delete restored.settings;state=restored;originalPersist();renderAll();
           pending=true;hideHistory();scheduleUpload(0);
         }catch(err){alert('Impossibile ripristinare: '+err.message);}
       };
@@ -269,7 +276,7 @@ function installUI(){
     '<button id="cloudRoster" type="button">👥 Recupera rosa ASM70</button>',
     '</div>'
   ].join('');
-  first.parentNode.insertBefore(section,first);
+  const main=document.querySelector('main');main.insertBefore(section,main.firstChild);
   document.body.insertAdjacentHTML('beforeend',[
     '<div class="modal" id="cloudLoginModal" role="dialog" aria-modal="true" aria-label="Salvataggio online">',
     '<div class="modal-box"><div class="modal-head">☁️ Salvataggio online ASM70</div>',
