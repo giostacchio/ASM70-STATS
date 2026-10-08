@@ -79,5 +79,5 @@ function exportCSV(){const rows=[['Giocatore',...state.events.map(e=>fmtDate(e.d
 function download(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),500)}
 $('eventModal').addEventListener('click',e=>{if(e.target.id==='eventModal')closeEventModal()});$('statusModal').addEventListener('click',e=>{if(e.target.id==='statusModal')closeStatusModal()});load();
 </script>
-<script src="./presenze-cloud.js?v=1"></script>
+<script src="./presenze-cloud.js?v=2"></script>
 </body></html>
