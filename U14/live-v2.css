@@ -13,3 +13,19 @@
 @media(max-width:760px) and (orientation:landscape){
   .players{grid-template-columns:repeat(5,minmax(72px,1fr))}.player{min-height:92px}.num{font-size:33px}.bench{display:flex;overflow:auto}.bench .player{min-width:78px}.oppPlayers{grid-template-columns:repeat(8,minmax(60px,1fr))}.oppPlayer{min-height:68px}.oppNum{font-size:27px}.opponentPanel{margin-top:7px}.panelHead{padding:8px 10px}.unknownScore{padding:6px 10px}.unknownScore span{width:auto}.historyPanel{min-height:calc(100vh - 125px)}.fullHistory{max-height:calc(100vh - 210px)}
 }
+
+/* V3 quick touch: raccolta dati senza popup e cambi in due tocchi */
+.player.quickSelected{border-color:#35d07f!important;box-shadow:0 0 0 2px rgba(53,208,127,.35),inset 0 0 0 1px rgba(53,208,127,.25)!important}
+.player.quickSelected .num{color:#63e6a3!important}
+.player.subIncoming{border-color:#f6c744!important;box-shadow:0 0 0 2px rgba(246,199,68,.38)!important;opacity:1!important}
+.player.subIncoming .num{color:#ffe27a!important}
+.quickCapture{border-top:1px solid var(--line);background:#0c131e;padding:10px 12px 12px}
+.quickCaptureHead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
+.quickCaptureHead>div{min-width:0}.quickCaptureHead b{display:block;font-size:13px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.quickCaptureHead span{display:block;font-size:9px;color:var(--mut);margin-top:2px}
+.quickActions{display:grid;grid-template-columns:repeat(11,minmax(54px,1fr));gap:6px}
+.quickActions button{min-height:48px;border-radius:10px;border:1px solid #354158;color:#fff;font-size:10px;font-weight:1000;padding:5px 3px}
+.quickActions button:disabled{opacity:.28;filter:grayscale(.8)}
+.qgood{background:#104f32!important;border-color:#167f4a!important}.qorange{background:#7a3508!important;border-color:#b44a07!important}.qblue{background:#163d8f!important;border-color:#2459c5!important}.qred{background:#702020!important;border-color:#a52a2a!important}.qmore{background:#343b4a!important}
+@media(max-width:900px){.quickActions{grid-template-columns:repeat(6,1fr)}}
+@media(max-width:520px){.quickCapture{padding:8px 7px 9px}.quickActions{grid-template-columns:repeat(4,1fr);gap:5px}.quickActions button{min-height:44px;font-size:9px}.quickCaptureHead b{font-size:12px}}
+@media(orientation:landscape) and (max-height:650px){.quickActions{grid-template-columns:repeat(11,1fr)}.quickActions button{min-height:38px}.quickCapture{padding:6px 7px 7px}}
