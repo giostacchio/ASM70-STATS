@@ -11,7 +11,7 @@
 <body>
 <div id="setupView" class="setup">
   <div class="setupCard">
-    <div class="setupHead"><h1>ASM70 · Live Stats V2</h1><p>Numero → azione → fatto. Ora anche per gli avversari, con cronologia completa.</p></div>
+    <div class="setupHead"><h1>ASM70 · Live Stats V2</h1><p>Raccolta rapida: giocatore → azione. Cambi in 2 tocchi e roster sempre ordinato per numero.</p></div>
     <div class="setupBody">
       <div class="formgrid">
         <div class="field full"><label>Partita dal calendario U14</label><select id="gameSelect"><option value="">Partita manuale</option></select></div>
@@ -59,7 +59,26 @@
       <div class="panel">
         <div class="panelHead"><div class="panelTitle">ASM70 · quintetto in campo</div><div class="courtHead"><span id="teamFouls" class="foulBadge">Falli squadra Q1: 0</span><button id="quickUndo" class="miniBtn">↶ Annulla</button></div></div>
         <div id="courtPlayers" class="players"></div>
-        <div class="benchLabel">Panchina</div><div id="benchPlayers" class="bench"></div>
+        <div class="benchLabel">Panchina · tocca chi deve entrare</div><div id="benchPlayers" class="bench"></div>
+        <div id="quickCapture" class="quickCapture">
+          <div class="quickCaptureHead">
+            <div><b id="quickTitle">Seleziona un giocatore in campo</b><span id="quickHint">Poi tocca direttamente l’azione.</span></div>
+            <button id="cancelQuick" class="miniBtn hidden">Annulla cambio</button>
+          </div>
+          <div class="quickActions">
+            <button data-qact="1M" class="qgood">+1</button>
+            <button data-qact="2M" class="qgood">+2</button>
+            <button data-qact="3M" class="qgood">+3</button>
+            <button data-qact="RD" class="qorange">RD</button>
+            <button data-qact="RO" class="qorange">RO</button>
+            <button data-qact="AST" class="qblue">AST</button>
+            <button data-qact="STL" class="qblue">REC</button>
+            <button data-qact="TO" class="qred">PERSA</button>
+            <button data-qact="FOUL" class="qred">FALLO</button>
+            <button data-qact="FREC" class="qorange">FS</button>
+            <button id="quickMore" class="qmore">ALTRO</button>
+          </div>
+        </div>
       </div>
 
       <div class="panel opponentPanel">
@@ -97,7 +116,7 @@
 <div id="subBack" class="sheetBack hidden"><div class="sheet"><div class="sheetTop"><div><div class="sheetName">Cambio</div><div id="subTitle" class="sheetMini"></div></div><button id="closeSub" class="close">×</button></div><div id="subGrid" class="subGrid"></div></div></div>
 <div id="toast" class="toast hidden"></div>
 
-<script src="./live-v2.js?v=20261004-savegames-1"></script>
+<script src="./live-v2.js?v=20261012-quick-1"></script>
 <script>
 document.querySelectorAll('[data-tab-jump]').forEach(b=>b.onclick=()=>{const target=b.dataset.tabJump;const tab=document.querySelector(`.nav [data-tab="${target}"]`);if(tab)tab.click()});
 </script>
