@@ -6,12 +6,12 @@
 <meta name="theme-color" content="#07101f">
 <title>ASM70 · Live Stats V2</title>
 <link rel="stylesheet" href="./live.css">
-<link rel="stylesheet" href="./live-v2.css?v=20261101-action-first-1">
+<link rel="stylesheet" href="./live-v2.css?v=20261101-roster-simple-1">
 </head>
 <body>
 <div id="setupView" class="setup">
   <div class="setupCard">
-    <div class="setupHead"><h1>ASM70 · Live Stats V2</h1><p>Raccolta rapida: prima l’azione, poi il giocatore. Cambi in 2 tocchi e roster ordinato per numero.</p></div>
+    <div class="setupHead"><h1>ASM70 · Live Stats V2</h1><p>Raccolta veloce: scegli l'azione, poi il giocatore. Elenco alfabetico e nomi ben visibili.</p></div>
     <div class="setupBody">
       <div class="formgrid">
         <div class="field full"><label>Partita dal calendario U14</label><select id="gameSelect"><option value="">Partita manuale</option></select></div>
@@ -22,9 +22,11 @@
       </div>
 
       <div class="rosterSetup">
-        <div class="setupSectionHead"><b>Roster ASM70</b><span id="loadStatus">caricamento…</span></div>
+        <div class="setupSectionHead"><b>Giocatori ASM70</b><span id="loadStatus">caricamento…</span></div>
+        <p class="rosterHelp">Seleziona chi partecipa alla partita. Modifica nome e maglia, oppure rimuovi un giocatore da questo dispositivo.</p>
         <div id="rosterGrid" class="rosterGrid"></div>
-        <div class="addPlayer"><input id="newNum" inputmode="numeric" placeholder="#"><input id="newName" placeholder="Nome giocatore"><button id="addPlayer">Aggiungi</button></div>
+        <div class="addPlayer"><input id="newNum" type="number" min="0" max="99" inputmode="numeric" placeholder="Maglia #"><input id="newName" placeholder="Nome e cognome"><button id="addPlayer">+ Aggiungi</button></div>
+        <div id="excludedRosterSection" class="hidden"><button id="toggleExcludedRoster" type="button" class="rosterRestoreToggle">Mostra giocatori esclusi</button><div id="excludedRoster" class="rosterRestoreGrid hidden"></div></div>
       </div>
 
       <div class="rosterSetup oppSetup">
@@ -57,11 +59,11 @@
   <main class="content">
     <section id="tabLive">
       <div class="panel">
-        <div class="panelHead"><div class="panelTitle">ASM70 · registrazione rapida</div><div class="courtHead"><span id="teamFouls" class="foulBadge">Falli squadra Q1: 0</span><button id="quickUndo" class="miniBtn">↶ Annulla</button></div></div>
-        <div id="quickCapture" class="quickCapture">
+        <div class="panelHead"><div class="panelTitle">REGISTRA AZIONE · ASM70 / AVVERSARI</div><div class="courtHead"><span id="teamFouls" class="foulBadge">Falli ASM70 Q1: 0</span><button id="quickUndo" class="miniBtn">↶ Annulla</button></div></div>
+        <div id="quickCapture" class="quickCapture simpleCapture">
           <div class="quickCaptureHead">
-            <div><b id="quickTitle">1. Tocca un'azione</b><span id="quickHint">2. Scegli a quale giocatore assegnarla.</span></div>
-            <button id="cancelQuick" class="miniBtn hidden">Annulla cambio</button>
+            <div><b id="quickTitle">1. Tocca l'azione</b><span id="quickHint">2. Scegli il giocatore dall'elenco alfabetico.</span></div>
+            <button id="addOppInGame" class="miniBtn" type="button">+ numero avversario</button>
           </div>
           <div class="quickSideSwitch" role="group" aria-label="Squadra a cui assegnare la statistica">
             <button type="button" class="active" data-quick-side="us" aria-pressed="true">ASM70</button>
@@ -81,16 +83,7 @@
             <button id="quickMore" class="qmore">ALTRO</button>
           </div>
         </div>
-        <div class="benchLabel">Quintetto · per un cambio tocca prima chi entra dalla panchina</div>
-        <div id="courtPlayers" class="players"></div>
-        <div class="benchLabel">Panchina · tocca chi entra, poi chi esce</div><div id="benchPlayers" class="bench"></div>
-
-      </div>
-
-      <div class="panel opponentPanel">
-        <div class="panelHead"><div><div class="panelTitle">Avversari · numeri e statistiche</div><div class="panelSub">Per registrare: scegli AVVERSARI, poi l’azione e infine il numero.</div></div><div class="courtHead"><span id="oppFouls" class="foulBadge blueBadge">Falli avversari Q1: 0</span><button id="addOppInGame" class="miniBtn">+ numero</button></div></div>
-        <div id="oppPlayers" class="oppPlayers"></div>
-        <div class="unknownScore"><span>Se non riesci a vedere il numero:</span><button data-opp-unknown="1">#? +1</button><button data-opp-unknown="2">#? +2</button><button data-opp-unknown="3">#? +3</button></div>
+        <span id="oppFouls" class="hidden"></span>
       </div>
 
       <div class="quickHistory panel">
@@ -110,7 +103,7 @@
       <div class="panel">
         <div class="panelHead"><div><div class="panelTitle">Statistiche partita</div><div id="statsScore" class="statsScore"></div></div><div class="statsTop"><button id="exportCsv" class="miniBtn orange">Esporta CSV</button></div></div>
         <div class="statsSectionTitle">ASM70</div>
-        <div class="statsWrap"><table class="statsTable"><thead><tr><th>Giocatore</th><th>MIN</th><th>PT</th><th>TL</th><th>2PT</th><th>3PT</th><th>RD</th><th>RO</th><th>RT</th><th>AST</th><th>REC</th><th>PR</th><th>BLK</th><th>F</th><th>FS</th></tr></thead><tbody id="statsBody"></tbody></table></div>
+        <div class="statsWrap"><table class="statsTable"><thead><tr><th>Giocatore</th><th>PT</th><th>TL</th><th>2PT</th><th>3PT</th><th>RD</th><th>RO</th><th>RT</th><th>AST</th><th>REC</th><th>PR</th><th>BLK</th><th>F</th><th>FS</th></tr></thead><tbody id="statsBody"></tbody></table></div>
         <div class="statsSectionTitle oppTitle">Avversari</div>
         <div class="statsWrap"><table class="statsTable oppStatsTable"><thead><tr><th>Numero</th><th>PT</th><th>TL</th><th>2PT</th><th>3PT</th><th>RT</th><th>AST</th><th>REC</th><th>PR</th><th>BLK</th><th>F</th></tr></thead><tbody id="oppStatsBody"></tbody></table></div>
       </div>
@@ -118,6 +111,19 @@
   </main>
 </div>
 
+<div id="rosterEditBack" class="sheetBack hidden" role="dialog" aria-modal="true" aria-labelledby="rosterEditTitle">
+  <div class="sheet rosterEditSheet">
+    <div class="sheetTop"><div id="rosterEditTitle" class="sheetName">Modifica giocatore</div><button id="closeRosterEdit" type="button" class="close" aria-label="Chiudi modifica">×</button></div>
+    <div class="rosterEditForm">
+      <label for="editRosterName">Nome giocatore</label>
+      <input id="editRosterName" type="text" autocomplete="off" />
+      <label for="editRosterNum">Numero di maglia</label>
+      <input id="editRosterNum" type="number" min="0" max="99" inputmode="numeric" />
+      <div id="editRosterError" class="rosterEditError" aria-live="polite"></div>
+      <div class="rosterEditButtons"><button id="cancelRosterEdit" type="button" class="miniBtn">Annulla</button><button id="saveRosterEdit" type="button" class="startBtn">Salva modifiche</button></div>
+    </div>
+  </div>
+</div>
 <div id="pickBack" class="sheetBack hidden" role="dialog" aria-modal="true" aria-labelledby="pickTitle">
   <div class="sheet pickSheet">
     <div class="sheetTop"><div><div id="pickTitle" class="sheetName">Scegli il giocatore</div><div id="pickHint" class="sheetMini">Tocca il numero per registrare.</div></div><button id="closePick" class="close" aria-label="Annulla la scelta">×</button></div>
@@ -128,7 +134,7 @@
 <div id="subBack" class="sheetBack hidden"><div class="sheet"><div class="sheetTop"><div><div class="sheetName">Cambio</div><div id="subTitle" class="sheetMini"></div></div><button id="closeSub" class="close">×</button></div><div id="subGrid" class="subGrid"></div></div></div>
 <div id="toast" class="toast hidden"></div>
 
-<script src="./live-v2.js?v=20261012-stable-1"></script>\n<script src="./live-quick.js?v=20261101-action-first-1"></script>
+<script src="./live-v2.js?v=20261101-roster-simple-1"></script>\n<script src="./live-quick.js?v=20261101-roster-simple-1"></script>
 <script>
 document.querySelectorAll('[data-tab-jump]').forEach(b=>b.onclick=()=>{const target=b.dataset.tabJump;const tab=document.querySelector(`.nav [data-tab="${target}"]`);if(tab)tab.click()});
 </script>
