@@ -423,6 +423,17 @@ $('#exportCsv').onclick=()=>{
   r.rows.forEach(p=>rows.push([S.team,p.num,p.name,p.pt,
     p.ftM+'/'+(p.ftM+p.ftX),p.twoM+'/'+(p.twoM+p.twoX),p.threeM+'/'+(p.threeM+p.threeX),
     p.rd,p.ro,p.r,p.ast,p.rec,p.to,p.blk,p.f,p.fs,p.val]));
+
+  S.opponents.forEach(p=>{
+    const n=t=>stat('opp',p.id,t),rd=n('RD'),ro=n('RO');
+    rows.push([S.opponent,p.num,p.name||'Avversario',madePts('opp',p.id),
+      n('1M')+'/'+(n('1M')+n('1X')),n('2M')+'/'+(n('2M')+n('2X')),
+      n('3M')+'/'+(n('3M')+n('3X')),rd,ro,rd+ro,
+      n('AST'),n('STL'),n('TO'),n('BLK'),n('FOUL'),n('FREC'),'']);
+  });
+  rows.push([]);
+  rows.push(['RISULTATO FINALE','','',r.our+' - '+r.opp]);
+  rows.push(['AVVERSARI TOTALI (inclusi # sconosciuti)','','',r.opp]);
   const csv=rows.map(row=>row.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(';')).join('\n');
   const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);
