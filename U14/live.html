@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#07101f">
 <title>ASM70 · Live Stats V2</title>
 <link rel="stylesheet" href="./live.css">
-<link rel="stylesheet" href="./live-v2.css?v=20261101-opponent-score-picker-1">
+<link rel="stylesheet" href="./live-v2.css?v=20261101-final-report-1">
 </head>
 <body>
 <div id="setupView" class="setup">
@@ -41,6 +41,10 @@
         <div id="savedGames"><div class="setupNote">Nessuna partita salvata.</div></div>
       </div>
 
+      <div id="finalReviewPanel" class="finalReviewPanel hidden" aria-live="polite">
+        <div class="finalReviewBar"><strong>RISULTATO FINALE E ANALISI</strong><button type="button" id="closeFinalReview" class="miniBtn">Chiudi</button></div>
+        <div id="finalReviewContent"></div>
+      </div>
       <div class="setupActions"><button id="resumeBtn" class="subtleBtn hidden">Riprendi partita</button><button id="startBtn" class="startBtn">Inizia partita</button></div>
     </div>
   </div>
@@ -68,6 +72,9 @@
             <button data-qact="1M" class="qgood">+1</button>
             <button data-qact="2M" class="qgood">+2</button>
             <button data-qact="3M" class="qgood">+3</button>
+            <button data-qact="1X" class="qmiss" aria-label="Tiro libero sbagliato">TL ✕</button>
+            <button data-qact="2X" class="qmiss" aria-label="Tiro da due sbagliato">2PT ✕</button>
+            <button data-qact="3X" class="qmiss" aria-label="Tiro da tre sbagliato">3PT ✕</button>
             <button data-qact="RD" class="qorange">RIMB. DIF.</button>
             <button data-qact="RO" class="qorange">RIMB. OFF.</button>
             <button data-qact="AST" class="qblue">ASSIST</button>
@@ -75,7 +82,7 @@
             <button data-qact="TO" class="qred">PALLA PERSA</button>
             <button data-qact="FOUL" class="qred">FALLO</button>
             <button data-qact="FREC" class="qorange">FALLO SUB.</button>
-            <button id="quickMore" class="qmore">ALTRO</button>
+            <button id="quickMore" class="qmore">STOPPATA</button>
           </div>
         </div>
         <span id="oppFouls" class="hidden"></span>
@@ -106,9 +113,11 @@
 
     <section id="tabStats" class="hidden">
       <div class="panel">
-        <div class="panelHead"><div><div class="panelTitle">Statistiche partita</div><div id="statsScore" class="statsScore"></div></div><div class="statsTop"><button id="exportCsv" class="miniBtn orange">Esporta CSV</button></div></div>
+        <div class="panelHead"><div><div class="panelTitle">Statistiche e valutazione</div><div id="statsScore" class="statsScore"></div></div><div class="statsTop"><button id="exportCsv" class="miniBtn orange">Esporta CSV</button></div></div>
+        <div id="statsSummary" class="statsSummary"></div>
         <div class="statsSectionTitle">ASM70</div>
-        <div class="statsWrap"><table class="statsTable"><thead><tr><th>Giocatore</th><th>PT</th><th>TL</th><th>2PT</th><th>3PT</th><th>RD</th><th>RO</th><th>RT</th><th>AST</th><th>REC</th><th>PR</th><th>BLK</th><th>F</th><th>FS</th></tr></thead><tbody id="statsBody"></tbody></table></div>
+        <div class="statsWrap"><table class="statsTable"><thead><tr><th>Giocatore</th><th>PT</th><th>TL</th><th>2PT</th><th>3PT</th><th>RD</th><th>RO</th><th>RT</th><th>AST</th><th>REC</th><th>PR</th><th>BLK</th><th>F</th><th>FS</th><th>VAL*</th></tr></thead><tbody id="statsBody"></tbody></table></div>
+        <div class="statsNote">* VAL: indice indicativo = punti + rimbalzi + assist + recuperi + stoppate + falli subiti − tiri sbagliati − palle perse − falli commessi. Non è un voto e dipende dalle azioni registrate.</div>
         <div class="statsSectionTitle oppTitle">Avversari</div>
         <div class="statsWrap"><table class="statsTable oppStatsTable"><thead><tr><th>Numero</th><th>PT</th><th>TL</th><th>2PT</th><th>3PT</th><th>RT</th><th>AST</th><th>REC</th><th>PR</th><th>BLK</th><th>F</th></tr></thead><tbody id="oppStatsBody"></tbody></table></div>
       </div>
@@ -140,7 +149,7 @@
 <div id="subBack" class="sheetBack hidden"><div class="sheet"><div class="sheetTop"><div><div class="sheetName">Cambio</div><div id="subTitle" class="sheetMini"></div></div><button id="closeSub" class="close">×</button></div><div id="subGrid" class="subGrid"></div></div></div>
 <div id="toast" class="toast hidden"></div>
 
-<script src="./live-v2.js?v=20261101-opponent-score-picker-1"></script>\n<script src="./live-quick.js?v=20261101-opponent-score-picker-1"></script>
+<script src="./live-v2.js?v=20261101-final-report-1"></script>\n<script src="./live-quick.js?v=20261101-final-report-1"></script>
 <script>
 document.querySelectorAll('[data-tab-jump]').forEach(b=>b.onclick=()=>{const target=b.dataset.tabJump;const tab=document.querySelector(`.nav [data-tab="${target}"]`);if(tab)tab.click()});
 </script>
