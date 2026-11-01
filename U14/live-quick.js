@@ -71,24 +71,10 @@ function openPicker(type,trigger){
   document.querySelectorAll('[data-pick]').forEach(b=>b.onclick=()=>commitAction(b.dataset.pick));
   document.querySelector('#pickBack').classList.remove('hidden');
 }
-function openQuickMore(){
-  if(!S)return;
-  document.querySelector('#sheetNum').textContent='…';
-  document.querySelector('#sheetName').textContent='Altre azioni';
-  document.querySelector('#sheetMini').textContent='Seleziona l’azione, poi il giocatore.';
-  const defs=actionDefs.filter(a=>['1X','2X','3X','BLK'].includes(a[0]));
-  document.querySelector('#actions').innerHTML=defs.map(a=>
-    '<button class="act '+a[2]+'" data-act="'+a[0]+'">'+a[1]+'</button>').join('');
-  document.querySelectorAll('[data-act]').forEach(b=>b.onclick=()=>{
-    const type=b.dataset.act;
-    closeActions();openPicker(type,document.querySelector('#quickMore'));
-  });
-  document.querySelector('#actionBack').classList.remove('hidden');
-}
 const baseRenderAll=renderAll;
 renderAll=function(){baseRenderAll();renderActionCaption()};
 document.querySelectorAll('[data-qact]').forEach(b=>b.onclick=()=>openPicker(b.dataset.qact,b));
-document.querySelector('#quickMore').onclick=openQuickMore;
+document.querySelector('#quickMore').onclick=e=>openPicker('BLK',e.currentTarget);
 document.querySelector('#closePick').onclick=closePicker;
 document.querySelector('#pickBack').onclick=e=>{if(e.target===e.currentTarget)closePicker()};
 document.addEventListener('keydown',e=>{

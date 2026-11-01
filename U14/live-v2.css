@@ -152,3 +152,54 @@
  .pickSheet .pickPlayer{min-height:56px}
  .pickSheet .pickName{font-size:15px}
 }
+
+
+/* Statistiche complete: errori al tiro e riepilogo partita */
+.simpleCapture .quickActions .qmiss{background:#71331e!important;border-color:#c46343!important;color:#fff7f1!important}
+.statsSummary{padding:12px;display:grid;gap:12px;border-bottom:1px solid #2b3649}
+.reviewScore{display:grid;grid-template-columns:minmax(0,1fr) minmax(110px,.8fr) minmax(0,1fr);align-items:center;gap:8px;padding:16px 10px;border-radius:14px;background:#142034;color:#fff;text-align:center}
+.reviewScore>div{min-width:0;display:flex;flex-direction:column;align-items:center;gap:6px}
+.reviewScore b{font-size:13px;overflow-wrap:anywhere}
+.reviewScore strong{font-size:40px;line-height:1;font-variant-numeric:tabular-nums}
+.reviewResult span{font-size:9px;letter-spacing:.9px;color:#b6c5d8;font-weight:900}
+.reviewResult b{font-size:15px;color:#ffc083}
+.reviewResult small{font-size:12px;color:#b6c5d8}
+.reviewKpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
+.reviewKpis>div{background:#1a283c;border:1px solid #32445b;border-radius:10px;min-width:0;padding:10px;display:flex;flex-direction:column;gap:6px}
+.reviewKpis span{font-size:11px;color:#b2c1d4}
+.reviewKpis b{font-size:18px;color:#fff;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.reviewInsights{padding:9px 11px;border-left:3px solid #d17a3e;background:#172338;color:#d9e3ef;border-radius:8px;font-size:12px;line-height:1.45}
+.reviewInsights p{margin:5px 0}
+.statsNote,.reviewDisclaimer{padding:10px 13px;font-size:11px;line-height:1.5;color:#bbc8d9;background:#161f2d}
+.savedGameCard{display:flex;gap:10px;justify-content:space-between;align-items:center;flex-wrap:wrap;border:1px solid #d5e0ee;border-radius:11px;padding:11px;margin-top:8px;background:#f5f9fd;color:#1d2e45}
+.savedGameCard .setupNote{font-size:12px;color:#526680}
+.savedGameBtns{display:flex;gap:6px;flex-wrap:wrap}
+.finalReviewPanel{margin-top:18px;border:1px solid #355b88;border-radius:14px;background:#101a2a;color:#edf4ff;overflow:hidden;scroll-margin-top:12px}
+.finalReviewBar{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 14px;background:#182c49}
+.finalReviewBar strong{font-size:14px}
+.finalReviewPanel #finalReviewContent{padding:12px;display:grid;gap:12px}
+.reviewSavedNote{font-size:11px;color:#a7c9ee;line-height:1.4}
+.finalReviewPanel h3{font-size:15px;margin:6px 0 0}
+.reviewQuarters{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
+.reviewQuarters>div{background:#1e304b;border:1px solid #355275;border-radius:9px;display:flex;gap:4px;flex-direction:column;align-items:center;padding:8px}
+.reviewQuarters span{font-size:10px;color:#afc0d9}
+.reviewQuarters b{font-size:16px}
+.reviewTableWrap{overflow-x:auto}
+.reviewTable{width:100%;min-width:650px;border-collapse:collapse;font-size:12px}
+.reviewTable th,.reviewTable td{padding:9px 7px;border-bottom:1px solid #324156;text-align:center;white-space:nowrap}
+.reviewTable th{font-size:10px;color:#a9bed9}
+.reviewTable td:first-child,.reviewTable th:first-child{text-align:left;position:sticky;left:0;background:#172237;white-space:normal;min-width:140px}
+.reviewTable td:last-child{color:#ffb984}
+@media(max-width:760px){
+ .reviewKpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .reviewScore strong{font-size:33px}
+ .reviewScore b{font-size:11px}
+ .reviewKpis b{font-size:16px}
+ .finalReviewPanel #finalReviewContent{padding:8px}
+ .reviewQuarters b{font-size:13px}
+}
+@media print{
+ .finalReviewPanel{color:#161f2d;background:#fff}
+ .reviewScore,.reviewKpis>div,.reviewQuarters>div{color:#161f2d;background:#fff;border:1px solid #aebaca}
+ .reviewScore b,.reviewScore strong,.reviewKpis b,.reviewQuarters b{color:#161f2d}
+}
