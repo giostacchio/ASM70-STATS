@@ -29,3 +29,36 @@
 @media(max-width:900px){.quickActions{grid-template-columns:repeat(6,1fr)}}
 @media(max-width:520px){.quickCapture{padding:8px 7px 9px}.quickActions{grid-template-columns:repeat(4,1fr);gap:5px}.quickActions button{min-height:44px;font-size:9px}.quickCaptureHead b{font-size:12px}}
 @media(orientation:landscape) and (max-height:650px){.quickActions{grid-template-columns:repeat(11,1fr)}.quickActions button{min-height:38px}.quickCapture{padding:6px 7px 7px}}
+
+
+/* 2026-11-01 · Inserimento action-first e scelta rapida del numero */
+.quickSideSwitch{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin:8px 0 10px}
+.quickSideSwitch button{min-height:42px;border:1px solid #394a63;background:#1b2638;color:#c1ccdc;border-radius:11px;font-size:12px;font-weight:950}
+.quickSideSwitch button.active{background:#d45b11;border-color:#ff8b3d;color:#fff}
+.quickSideSwitch button[data-quick-side="opp"].active{background:#2459b9;border-color:#78a8ff}
+.quickSideSwitch button:disabled{opacity:.4}
+.quickActions button{font-size:10px;letter-spacing:.1px}
+.pickSheet{max-height:min(85vh,680px);display:flex;flex-direction:column}
+.pickGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;padding:12px;overflow-y:auto;overscroll-behavior:contain}
+.pickPlayer{min-height:92px;border:1px solid #435371;border-radius:13px;padding:10px 7px;background:#1c293c;color:#fff;text-align:left;display:flex;flex-direction:column;align-items:flex-start;gap:4px;justify-content:center}
+.pickPlayer strong{font-size:30px;color:#ffad69;line-height:1.1}
+.pickPlayer span{font-size:11px;font-weight:850;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+.pickPlayer small{font-size:10px;color:#aebdd0}
+.pickPlayer:active{transform:scale(.98);background:#294461}
+.pickPlayer:focus-visible,.quickActions button:focus-visible,.quickSideSwitch button:focus-visible{outline:3px solid #fff;outline-offset:2px}
+.pickSubhead{grid-column:1/-1;font-size:11px;font-weight:900;color:#91a1b7;margin-top:6px}
+.benchPick{min-height:70px;opacity:.8}
+.benchPick strong{font-size:22px}
+.unknownPick{background:#172e54;border-color:#4770ac}
+.unknownPick strong{color:#7fb1ff}
+@media(max-width:600px){
+  .quickActions{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .quickActions button{min-height:47px;font-size:9px;padding:6px 3px}
+  .pickGrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding:10px}
+  .pickPlayer{min-height:85px}
+  .pickPlayer strong{font-size:28px}
+}
+@media(orientation:landscape) and (max-height:650px){
+  .pickSheet{max-height:94vh}
+  .pickGrid{grid-template-columns:repeat(5,minmax(0,1fr))}
+}
