@@ -51,7 +51,22 @@ function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&l
 function fmt(sec){sec=Math.max(0,Math.round(sec||0));return String(Math.floor(sec/60)).padStart(2,'0')+':'+String(sec%60).padStart(2,'0')}
 function toast(t){$('#toast').textContent=t;$('#toast').classList.remove('hidden');clearTimeout(toast.t);toast.t=setTimeout(()=>$('#toast').classList.add('hidden'),1400)}
 function save(){if(S)localStorage.setItem(STORE,JSON.stringify(S))}
+
+const ROSTER_CHANGES_STORE='asm70_roster_personalizzazioni_v1';
+function rosterChanges(){
+  let d={edits:{},hidden:[],removed:{}};
+  try{const stored=JSON.parse(localStorage.getItem(ROSTER_CHANGES_STORE)||'{}');if(stored&&typeof stored==='object')d={...d,...stored}}catch(e){}
+  if(!d.edits||typeof d.edits!=='object')d.edits={};
+  if(!Array.isArray(d.hidden))d.hidden=[];
+  if(!d.removed||typeof d.removed!=='object')d.removed={};
+  return d;
+}
 function saveRoster(){localStorage.setItem(ROSTER_STORE,JSON.stringify(localRoster))}
+function saveRosterChanges(d){localStorage.setItem(ROSTER_CHANGES_STORE,JSON.stringify(d))}
+function sortRosterAlphabetically(a,b){return String(a.name||'').localeCompare(String(b.name||''),'it',{sensitivity:'base'})||(Number(a.num)||0)-(Number(b.num)||0)}
+function validJerseyNumber(value){const s=String(value??'').trim();if(!/^\d{1,2}$/.test(s))return null;const n=Number(s);return n>=0&&n<=99?n:null}
+function duplicateJersey(n,id){return localRoster.some(p=>String(p.id)!==String(id)&&Number(p.num)===n)}
+
 function getArchive(){try{const x=JSON.parse(localStorage.getItem(ARCHIVE_STORE)||'[]');return Array.isArray(x)?x:[]}catch(e){return []}}
 function setArchive(a){localStorage.setItem(ARCHIVE_STORE,JSON.stringify(a))}
 function clone(x){return JSON.parse(JSON.stringify(x))}
@@ -72,14 +87,136 @@ function findPlayer(side,id){return (side==='us'?S.players:S.opponents).find(p=>
 function newState(players,opponents){let len=Number($('#periodLen').value)||600,gid=$('#gameSelect').value||null,g=online.games.find(x=>String(x.id)===String(gid));return{version:2,createdAt:new Date().toISOString(),team:$('#teamInput').value.trim()||'ASM70 U14',opponent:$('#oppInput').value.trim()||'Avversari',homeAway:$('#homeAway').value,gameId:gid,gameDate:g?.game_date||null,gameTime:g?.game_time||null,periodLen:len,period:1,clock:len,running:false,players:players.map((p,i)=>({id:p.id||uid(),name:p.name,num:Number(p.num)||0,onCourt:i<5,sec:0})),opponents:opponents.map(p=>({id:p.id||'opp_'+uid(),name:p.name||'',num:Number(p.num)||0})),events:[]}}
 function normalizeState(){if(!S)return;if(!Array.isArray(S.opponents))S.opponents=[];if(!Array.isArray(S.events))S.events=[];S.version=2;S.events.forEach(e=>{if(!e.side)e.side='us'});S.players.forEach(p=>{if(typeof p.sec!=='number')p.sec=0;if(typeof p.onCourt!=='boolean')p.onCourt=false})}
 async function loadOnline(){try{if(!db)await initDb();if(!db)throw Error('offline');let s=await db.from('team_settings').select('*').eq('id',1).single();if(s.data){online.settings=s.data;$('#teamInput').value=s.data.team_name||'ASM70 U14'}let [p,g,c]=await Promise.all([db.from('players').select('*').eq('active',true).order('display_order').order('jersey_number'),db.from('games').select('*').order('game_date',{ascending:false}).limit(40),db.from('game_callups').select('*')]);online.players=p.data||[];online.games=g.data||[];online.callups=c.data||[];$('#loadStatus').textContent='roster online caricato'}catch(e){$('#loadStatus').textContent='offline · uso roster locale'}mergeRoster();renderGameOptions();renderRosterSetup();renderOppDraft();renderSavedGames()}
-function mergeRoster(){let saved=[];try{saved=JSON.parse(localStorage.getItem(ROSTER_STORE)||'[]')}catch(e){}let map=new Map();online.players.forEach(p=>map.set(String(p.id),{id:String(p.id),name:p.name,num:p.jersey_number||0,selected:true}));saved.forEach(p=>{if(!map.has(String(p.id)))map.set(String(p.id),p)});localRoster=[...map.values()].sort((a,b)=>(a.num||999)-(b.num||999)||a.name.localeCompare(b.name))}
+
+function mergeRoster(){
+  let saved=[];try{saved=JSON.parse(localStorage.getItem(ROSTER_STORE)||'[]')}catch(e){}
+  if(!Array.isArray(saved))saved=[];
+  const changes=rosterChanges(),hidden=new Set(changes.hidden.map(String));
+  const prev=new Map(saved.filter(p=>p&&p.id!==undefined).map(p=>[String(p.id),p]));
+  const map=new Map();
+  online.players.forEach(p=>{
+    const id=String(p.id);if(hidden.has(id))return;
+    const edit=changes.edits[id]||{},old=prev.get(id);
+    map.set(id,{id,name:edit.name||p.name,num:Number(edit.num??p.jersey_number??0),selected:old?.selected!==false});
+  });
+  // Mantieni il roster locale anche se il dispositivo è momentaneamente offline.
+  saved.forEach(p=>{
+    if(!p||p.id===undefined||hidden.has(String(p.id)))return;
+    if(!map.has(String(p.id)))map.set(String(p.id),p);
+  });
+  localRoster=[...map.values()].sort(sortRosterAlphabetically);
+}
+
 function renderGameOptions(){let sel=$('#gameSelect'),cur=sel.value;sel.innerHTML='<option value="">Partita manuale</option>';online.games.forEach(g=>{let o=document.createElement('option');o.value=g.id;o.textContent=`${g.game_date} · ${g.home_away==='home'?'vs':'@'} ${g.opponent}`;sel.appendChild(o)});if([...sel.options].some(o=>o.value===cur))sel.value=cur}
-function renderRosterSetup(){let box=$('#rosterGrid');if(!localRoster.length){box.innerHTML='<div style="grid-column:1/-1;padding:18px;text-align:center;color:#7a8798">Nessun giocatore: aggiungilo qui sotto oppure dall’admin U14.</div>';return}box.innerHTML=localRoster.map((p,i)=>`<label class="rosterPick ${p.selected===false?'off':''}"><input type="checkbox" data-ridx="${i}" ${p.selected===false?'':'checked'}><span class="rnum">${esc(p.num)}</span><span class="rname">${esc(p.name)}</span></label>`).join('');$$('[data-ridx]').forEach(ch=>ch.onchange=()=>{localRoster[+ch.dataset.ridx].selected=ch.checked;saveRoster();renderRosterSetup()})}
+
+let editingRosterId=null;
+function renderRosterSetup(){
+  const box=$('#rosterGrid');
+  if(!localRoster.length){
+    box.innerHTML='<div class="emptyRoster">Nessun giocatore. Puoi aggiungerlo qui sotto.</div>';
+  }else{
+    box.innerHTML=localRoster.map((p,i)=>
+      '<div class="rosterManageRow '+(p.selected===false?'off':'')+'">'+
+        '<label class="rosterPickMain"><input type="checkbox" data-ridx="'+i+'" '+(p.selected===false?'':'checked')+' aria-label="Convoca '+esc(p.name)+'">'+
+          '<span class="rnum">#'+esc(p.num)+'</span><span class="rname" title="'+esc(p.name)+'">'+esc(p.name)+'</span></label>'+
+        '<button type="button" class="rosterEditBtn" data-edit-ridx="'+i+'" aria-label="Modifica '+esc(p.name)+'">Modifica</button>'+
+        '<button type="button" class="rosterDeleteBtn" data-delete-ridx="'+i+'" aria-label="Rimuovi '+esc(p.name)+'">Elimina</button>'+
+      '</div>'
+    ).join('');
+  }
+  $$('[data-ridx]').forEach(ch=>ch.onchange=()=>{
+    localRoster[+ch.dataset.ridx].selected=ch.checked;
+    saveRoster();renderRosterSetup();
+  });
+  $$('[data-edit-ridx]').forEach(b=>b.onclick=()=>openRosterEditor(localRoster[+b.dataset.editRidx].id));
+  $$('[data-delete-ridx]').forEach(b=>b.onclick=()=>removeRosterPlayer(localRoster[+b.dataset.deleteRidx].id));
+  renderRemovedRoster();
+}
+function closeRosterEditor(){
+  editingRosterId=null;
+  $('#rosterEditBack').classList.add('hidden');
+  $('#editRosterError').textContent='';
+}
+function openRosterEditor(id){
+  const p=localRoster.find(x=>String(x.id)===String(id));if(!p)return;
+  editingRosterId=String(id);
+  $('#editRosterName').value=p.name||'';
+  $('#editRosterNum').value=String(p.num??'');
+  $('#editRosterError').textContent='';
+  $('#rosterEditBack').classList.remove('hidden');
+  $('#editRosterName').focus();
+}
+function updateRosterPlayer(){
+  const p=localRoster.find(x=>String(x.id)===String(editingRosterId));if(!p)return;
+  const name=$('#editRosterName').value.trim(),num=validJerseyNumber($('#editRosterNum').value);
+  const error=$('#editRosterError');
+  if(!name){error.textContent='Inserisci un nome.';return}
+  if(num===null){error.textContent='Numero di maglia da 0 a 99.';return}
+  if(duplicateJersey(num,p.id)){error.textContent='Il numero di maglia è già assegnato a un altro giocatore.';return}
+  p.name=name;p.num=num;
+  if(online.players.some(x=>String(x.id)===String(p.id))){
+    const changes=rosterChanges();
+    changes.edits[String(p.id)]={name,num};
+    saveRosterChanges(changes);
+  }
+  localRoster.sort(sortRosterAlphabetically);
+  saveRoster();renderRosterSetup();closeRosterEditor();
+}
+function removeRosterPlayer(id){
+  const p=localRoster.find(x=>String(x.id)===String(id));if(!p)return;
+  if(!confirm('Rimuovere '+p.name+' (#'+p.num+') dalla lista su questo dispositivo?\\nLe partite e le statistiche già salvate NON saranno cancellate.'))return;
+  const changes=rosterChanges(),sid=String(id);
+  if(!changes.hidden.includes(sid))changes.hidden.push(sid);
+  changes.removed[sid]={...p};
+  saveRosterChanges(changes);
+  localRoster=localRoster.filter(x=>String(x.id)!==sid);
+  saveRoster();renderRosterSetup();
+}
+function restoreRosterPlayer(id){
+  const changes=rosterChanges(),sid=String(id);
+  const old=changes.removed[sid];
+  changes.hidden=changes.hidden.filter(x=>String(x)!==sid);
+  delete changes.removed[sid];
+  saveRosterChanges(changes);
+  if(old&&!localRoster.some(p=>String(p.id)===sid)){
+    localRoster.push(old);localRoster.sort(sortRosterAlphabetically);saveRoster();
+  }
+  mergeRoster();saveRoster();renderRosterSetup();
+}
+function renderRemovedRoster(){
+  const section=$('#excludedRosterSection'),box=$('#excludedRoster');
+  const changes=rosterChanges(),items=changes.hidden.map(id=>changes.removed[id]).filter(Boolean).sort(sortRosterAlphabetically);
+  section.classList.toggle('hidden',items.length===0);
+  $('#toggleExcludedRoster').textContent='Giocatori esclusi ('+items.length+') · '+(box.classList.contains('hidden')?'Mostra':'Nascondi');
+  box.innerHTML=items.map(p=>'<div class="restoreRow"><span><b>#'+esc(p.num)+'</b> '+esc(p.name)+'</span><button type="button" data-restore-id="'+esc(p.id)+'">Ripristina</button></div>').join('');
+  $$('[data-restore-id]').forEach(b=>b.onclick=()=>restoreRosterPlayer(b.dataset.restoreId));
+}
+$('#saveRosterEdit').onclick=updateRosterPlayer;
+$('#closeRosterEdit').onclick=closeRosterEditor;
+$('#cancelRosterEdit').onclick=closeRosterEditor;
+$('#rosterEditBack').onclick=e=>{if(e.target===$('#rosterEditBack'))closeRosterEditor()};
+$('#editRosterName').addEventListener('keydown',e=>{if(e.key==='Enter')updateRosterPlayer()});
+$('#editRosterNum').addEventListener('keydown',e=>{if(e.key==='Enter')updateRosterPlayer()});
+$('#toggleExcludedRoster').onclick=()=>{
+  $('#excludedRoster').classList.toggle('hidden');renderRemovedRoster();
+};
+
 function renderOppDraft(){let box=$('#oppRosterPreview');if(!draftOpp.length){box.innerHTML='<span class="oppHint">Inserisci i numeri della squadra avversaria. Non vengono salvati nel roster U14.</span>';return}box.innerHTML=draftOpp.map((p,i)=>`<button class="oppChip" data-od="${i}">#${esc(p.num)} <span>×</span></button>`).join('');$$('[data-od]').forEach(b=>b.onclick=()=>{draftOpp.splice(+b.dataset.od,1);renderOppDraft()})}
 function parseOppNumbers(){let raw=$('#oppNumbers').value.trim();if(!raw)return toast('Inserisci almeno un numero');let nums=[...new Set(raw.split(/[\s,;/-]+/).map(x=>parseInt(x,10)).filter(n=>Number.isFinite(n)&&n>=0&&n<=99))];if(!nums.length)return toast('Numeri non validi');draftOpp=nums.sort((a,b)=>a-b).map(n=>({id:'opp_'+uid(),num:n,name:''}));renderOppDraft();toast(`${nums.length} numeri avversari caricati`)}
 $('#buildOpp').onclick=parseOppNumbers;if($('#backupArchive'))$('#backupArchive').onclick=backupArchive;
 $('#gameSelect').onchange=()=>{let id=$('#gameSelect').value,g=online.games.find(x=>x.id===id);if(!g)return;if(g.opponent)$('#oppInput').value=g.opponent;if(g.home_away)$('#homeAway').value=g.home_away;let ids=online.callups.filter(c=>c.game_id===id).map(c=>String(c.player_id));if(ids.length){localRoster.forEach(p=>p.selected=ids.includes(String(p.id)));saveRoster();renderRosterSetup()}draftOpp=[];$('#oppNumbers').value='';renderOppDraft()};
-$('#addPlayer').onclick=()=>{let num=Number($('#newNum').value),name=$('#newName').value.trim();if(!name)return toast('Inserisci il nome');localRoster.push({id:'local_'+uid(),name,num:num||0,selected:true});localRoster.sort((a,b)=>(a.num||999)-(b.num||999)||a.name.localeCompare(b.name));saveRoster();$('#newNum').value='';$('#newName').value='';renderRosterSetup()};
+$('#addPlayer').onclick=()=>{
+  const name=$('#newName').value.trim(),num=validJerseyNumber($('#newNum').value);
+  if(!name)return alert('Inserisci il nome del giocatore.');
+  if(num===null)return alert('Inserisci un numero di maglia valido da 0 a 99.');
+  if(duplicateJersey(num,null))return alert('Questo numero di maglia è già assegnato.');
+  const p={id:'local_'+uid(),name,num,selected:true};
+  localRoster.push(p);localRoster.sort(sortRosterAlphabetically);
+  saveRoster();
+  $('#newNum').value='';$('#newName').value='';
+  renderRosterSetup();
+};
+
 async function refreshAuthSession(sess){if(!sess?.refresh_token)return null;try{const r=await fetch(SUPABASE_URL+'/auth/v1/token?grant_type=refresh_token',{method:'POST',headers:{apikey:SUPABASE_KEY,'Content-Type':'application/json'},body:JSON.stringify({refresh_token:sess.refresh_token}),cache:'no-store'});if(!r.ok)return null;let j=await r.json();localStorage.setItem(AUTH_SK,JSON.stringify(j));return j}catch(e){return null}}
 async function patchCalendarGame(gameId,payload,retry=true){if(!gameId)return{ok:false,skipped:true,reason:'Partita manuale'};let sess=null;try{sess=JSON.parse(localStorage.getItem(AUTH_SK)||'null')}catch(e){};if(!sess?.access_token)return{ok:false,reason:'Accedi prima all’area Admin per aggiornare il calendario'};try{let r=await fetch(SUPABASE_URL+'/rest/v1/games?id=eq.'+encodeURIComponent(gameId),{method:'PATCH',headers:{apikey:SUPABASE_KEY,'Authorization':'Bearer '+sess.access_token,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify(payload),cache:'no-store'});if(r.status===401&&retry){let n=await refreshAuthSession(sess);if(n)return patchCalendarGame(gameId,payload,false)}if(!r.ok)return{ok:false,reason:'HTTP '+r.status};let g=online.games.find(x=>String(x.id)===String(gameId));if(g)Object.assign(g,payload);return{ok:true}}catch(e){return{ok:false,reason:e.message||String(e)}}}
 async function finishCurrentGame(){if(!S)return;stopClock();let us=madePts('us'),op=madePts('opp');if(!confirm('Salvare la partita nello storico?\n\n'+S.team+' '+us+' - '+op+' '+S.opponent))return;S.finalScoreUs=us;S.finalScoreOpp=op;S.finalizedAt=new Date().toISOString();if(!S.gameDate){let g=online.games.find(x=>String(x.id)===String(S.gameId));S.gameDate=g?.game_date||null;S.gameTime=g?.game_time||null}let saved=archiveGame(S),sync={ok:false,skipped:true};if(S.gameId)sync=await patchCalendarGame(S.gameId,{score_us:us,score_them:op,status:'played'});localStorage.removeItem(STORE);S=null;draftOpp=[];$('#oppNumbers').value='';renderOppDraft();renderSavedGames();showSetup();if(sync.ok)alert('Partita salvata nello storico e risultato aggiornato nel calendario ASM70.');else if(saved&&sync.skipped)alert('Partita salvata nello storico locale.');else alert('Partita salvata nello storico locale.\nCalendario non aggiornato: '+(sync.reason||'accesso non disponibile')+'.')}
@@ -97,7 +234,7 @@ function renderOpponents(){let box=$('#oppPlayers');if(!S.opponents.length){box.
 $('#addOppInGame').onclick=()=>{if(!S)return;let raw=prompt('Numero maglia avversario da aggiungere:');let n=parseInt(raw,10);if(!Number.isFinite(n)||n<0||n>99)return;if(S.opponents.some(p=>p.num===n))return toast('Numero già presente');S.opponents.push({id:'opp_'+uid(),num:n,name:''});S.opponents.sort((a,b)=>a.num-b.num);save();renderAll();toast(`Aggiunto #${n}`)};
 function historyRows(){let us=0,opp=0;return S.events.map(e=>{let pts=pointsByType[e.type]||0;if(sideOf(e)==='us')us+=pts;else opp+=pts;return{...e,scoreUs:us,scoreOpp:opp}})}
 function renderEvents(){let box=$('#eventList');if(!S.events.length){box.innerHTML='<div class="empty">La cronologia si costruisce automaticamente: Q, tempo, squadra, numero, azione e punteggio.</div>';return}let labels=Object.fromEntries(actionDefs.map(x=>[x[0],x[1]]));box.innerHTML=historyRows().reverse().slice(0,250).map(e=>{let side=sideOf(e),p=e.playerId?findPlayer(side,e.playerId):null,team=side==='us'?S.team:S.opponent;return `<div class="event ${side==='opp'?'oppEvent':'usEvent'}"><div class="etime">Q${e.period} ${fmt(e.clock)}</div><div class="eventTeam">${esc(team)}</div><div class="enum">${p?'#'+esc(p.num):'#?'}</div><div class="elabel">${p&&p.name?esc(p.name)+' · ':''}${esc(labels[e.type]||e.label||e.type)}</div><div class="eventScore">${e.scoreUs}-${e.scoreOpp}</div></div>`}).join('')}
-function renderStats(){if(!S)return;$('#statsScore').textContent=`${S.team} ${madePts('us')} – ${madePts('opp')} ${S.opponent}`;$('#statsBody').innerHTML=S.players.map(p=>{let rd=stat('us',p.id,'RD'),ro=stat('us',p.id,'RO');return `<tr><td><div class="statsName"><span class="smallNum">${esc(p.num)}</span>${esc(p.name)}</div></td><td>${fmt(p.sec)}</td><td><b>${madePts('us',p.id)}</b></td><td>${ratio('us',p.id,'1')}</td><td>${ratio('us',p.id,'2')}</td><td>${ratio('us',p.id,'3')}</td><td>${rd}</td><td>${ro}</td><td><b>${rd+ro}</b></td><td>${stat('us',p.id,'AST')}</td><td>${stat('us',p.id,'STL')}</td><td>${stat('us',p.id,'TO')}</td><td>${stat('us',p.id,'BLK')}</td><td>${stat('us',p.id,'FOUL')}</td><td>${stat('us',p.id,'FREC')}</td></tr>`}).join('');$('#oppStatsBody').innerHTML=S.opponents.map(p=>`<tr><td><div class="statsName"><span class="smallNum oppSmall">${esc(p.num)}</span>${esc(p.name||'Avversario')}</div></td><td><b>${madePts('opp',p.id)}</b></td><td>${ratio('opp',p.id,'1')}</td><td>${ratio('opp',p.id,'2')}</td><td>${ratio('opp',p.id,'3')}</td><td>${stat('opp',p.id,'RD')+stat('opp',p.id,'RO')}</td><td>${stat('opp',p.id,'AST')}</td><td>${stat('opp',p.id,'STL')}</td><td>${stat('opp',p.id,'TO')}</td><td>${stat('opp',p.id,'BLK')}</td><td>${stat('opp',p.id,'FOUL')}</td></tr>`).join('')||'<tr><td colspan="11">Nessun numero avversario inserito.</td></tr>'}
+function renderStats(){if(!S)return;$('#statsScore').textContent=`${S.team} ${madePts('us')} – ${madePts('opp')} ${S.opponent}`;$('#statsBody').innerHTML=S.players.map(p=>{let rd=stat('us',p.id,'RD'),ro=stat('us',p.id,'RO');return `<tr><td><div class="statsName"><span class="smallNum">${esc(p.num)}</span>${esc(p.name)}</div></td><td><b>${madePts('us',p.id)}</b></td><td>${ratio('us',p.id,'1')}</td><td>${ratio('us',p.id,'2')}</td><td>${ratio('us',p.id,'3')}</td><td>${rd}</td><td>${ro}</td><td><b>${rd+ro}</b></td><td>${stat('us',p.id,'AST')}</td><td>${stat('us',p.id,'STL')}</td><td>${stat('us',p.id,'TO')}</td><td>${stat('us',p.id,'BLK')}</td><td>${stat('us',p.id,'FOUL')}</td><td>${stat('us',p.id,'FREC')}</td></tr>`}).join('');$('#oppStatsBody').innerHTML=S.opponents.map(p=>`<tr><td><div class="statsName"><span class="smallNum oppSmall">${esc(p.num)}</span>${esc(p.name||'Avversario')}</div></td><td><b>${madePts('opp',p.id)}</b></td><td>${ratio('opp',p.id,'1')}</td><td>${ratio('opp',p.id,'2')}</td><td>${ratio('opp',p.id,'3')}</td><td>${stat('opp',p.id,'RD')+stat('opp',p.id,'RO')}</td><td>${stat('opp',p.id,'AST')}</td><td>${stat('opp',p.id,'STL')}</td><td>${stat('opp',p.id,'TO')}</td><td>${stat('opp',p.id,'BLK')}</td><td>${stat('opp',p.id,'FOUL')}</td></tr>`).join('')||'<tr><td colspan="11">Nessun numero avversario inserito.</td></tr>'}
 function openActions(side,pid){selectedSide=side;selectedPlayer=pid;let p=findPlayer(side,pid);if(!p)return;$('#sheetNum').textContent=p.num;$('#sheetName').textContent=side==='us'?(p.name||'Giocatore'):`${S.opponent} · #${p.num}`;$('#sheetMini').textContent=side==='us'?`${madePts(side,pid)} punti · ${stat(side,pid,'FOUL')} falli · ${fmt(p.sec)} in campo`:`${madePts(side,pid)} punti · ${stat(side,pid,'FOUL')} falli`;let defs=side==='us'?actionDefs:actionDefs.filter(a=>a[0]!=='SUB');$('#actions').innerHTML=defs.map(a=>`<button class="act ${a[2]}" data-act="${a[0]}">${a[1]}</button>`).join('');$$('[data-act]').forEach(b=>b.onclick=()=>doAction(b.dataset.act));$('#actionBack').classList.remove('hidden')}
 function closeActions(){$('#actionBack').classList.add('hidden')}
 $('#closeSheet').onclick=closeActions;$('#actionBack').onclick=e=>{if(e.target===$('#actionBack'))closeActions()};
@@ -106,7 +243,7 @@ function openSubs(){let p=findPlayer('us',selectedPlayer);if(!p)return;let candi
 function swapPlayers(a,b){let p=findPlayer('us',a),q=findPlayer('us',b);if(!p||!q)return;let x=p.onCourt;p.onCourt=q.onCourt;q.onCourt=x;S.events.push({id:uid(),side:'us',playerId:p.id,otherPlayerId:q.id,type:'SUB',label:`Cambio ${p.onCourt?'entra':'esce'} con #${q.num} ${q.name}`,period:S.period,clock:S.clock,at:new Date().toISOString()});save();$('#subBack').classList.add('hidden');renderAll();toast('Cambio registrato')}
 $('#closeSub').onclick=()=>$('#subBack').classList.add('hidden');$('#subBack').onclick=e=>{if(e.target===$('#subBack'))$('#subBack').classList.add('hidden')};
 function stopClock(){if(clockTimer){clearInterval(clockTimer);clockTimer=null}if(S)S.running=false}
-function startClock(){if(!S||S.clock<=0||clockTimer)return;S.running=true;clockTimer=setInterval(()=>{if(!S||!S.running)return;S.clock=Math.max(0,S.clock-1);S.players.filter(p=>p.onCourt).forEach(p=>p.sec=(p.sec||0)+1);savePulse++;if(savePulse%5===0)save();if(S.clock===0){stopClock();save()}renderAll()},1000);renderAll()}
+function startClock(){if(!S||S.clock<=0||clockTimer)return;S.running=true;clockTimer=setInterval(()=>{if(!S||!S.running)return;S.clock=Math.max(0,S.clock-1);savePulse++;if(savePulse%5===0)save();if(S.clock===0){stopClock();save()}renderAll()},1000);renderAll()}
 $('#clockBtn').onclick=()=>{if(!S)return;if(S.running){stopClock();save();renderAll()}else startClock()};
 $('#periodBtn').onclick=()=>{if(!S)return;stopClock();let n=S.period>=4?1:S.period+1;if(confirm(`Passare a Q${n} e reimpostare il cronometro a ${fmt(S.periodLen)}?`)){S.period=n;S.clock=S.periodLen;save();renderAll()}};
 $$('[data-opp-unknown]').forEach(b=>b.onclick=()=>{if(!S)return;let type=b.dataset.oppUnknown+'M';S.events.push({id:uid(),side:'opp',playerId:null,type,label:`${b.dataset.oppUnknown} punto${b.dataset.oppUnknown==='1'?'':'i'} · numero non rilevato`,period:S.period,clock:S.clock,at:new Date().toISOString()});save();renderAll();toast(`Avversari +${b.dataset.oppUnknown}`)});
@@ -114,7 +251,7 @@ function undo(){if(!S||!S.events.length)return toast('Nulla da annullare');let e
 $('#quickUndo').onclick=undo;$('#historyUndo').onclick=undo;
 $('#clearEvents').onclick=()=>{if(confirm('Azzero tutta la cronologia? Anche i punteggi torneranno a 0.')){S.events=[];save();renderAll()}};
 $$('.nav [data-tab]').forEach(b=>b.onclick=()=>{$$('.nav [data-tab]').forEach(x=>x.classList.toggle('on',x===b));['live','history','stats'].forEach(t=>$('#tab'+t[0].toUpperCase()+t.slice(1)).classList.toggle('hidden',b.dataset.tab!==t));if(b.dataset.tab==='history')renderEvents();if(b.dataset.tab==='stats')renderStats()});
-$('#exportCsv').onclick=()=>{if(!S)return;let rows=[['Squadra','Numero','Giocatore','Min','Punti','TL','2PT','3PT','RD','RO','RT','Assist','Recuperi','Perse','Stoppate','Falli','Falli subiti']];S.players.forEach(p=>{let rd=stat('us',p.id,'RD'),ro=stat('us',p.id,'RO');rows.push([S.team,p.num,p.name,fmt(p.sec),madePts('us',p.id),ratio('us',p.id,'1'),ratio('us',p.id,'2'),ratio('us',p.id,'3'),rd,ro,rd+ro,stat('us',p.id,'AST'),stat('us',p.id,'STL'),stat('us',p.id,'TO'),stat('us',p.id,'BLK'),stat('us',p.id,'FOUL'),stat('us',p.id,'FREC')])});S.opponents.forEach(p=>{let rd=stat('opp',p.id,'RD'),ro=stat('opp',p.id,'RO');rows.push([S.opponent,p.num,p.name||'','',madePts('opp',p.id),ratio('opp',p.id,'1'),ratio('opp',p.id,'2'),ratio('opp',p.id,'3'),rd,ro,rd+ro,stat('opp',p.id,'AST'),stat('opp',p.id,'STL'),stat('opp',p.id,'TO'),stat('opp',p.id,'BLK'),stat('opp',p.id,'FOUL'),stat('opp',p.id,'FREC')])});let csv=rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(';')).join('\n');let blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`stats_${S.opponent.replace(/[^a-z0-9]+/gi,'_')}_${new Date().toISOString().slice(0,10)}.csv`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)};
+$('#exportCsv').onclick=()=>{if(!S)return;let rows=[['Squadra','Numero','Giocatore','Punti','TL','2PT','3PT','RD','RO','RT','Assist','Recuperi','Perse','Stoppate','Falli','Falli subiti']];S.players.forEach(p=>{let rd=stat('us',p.id,'RD'),ro=stat('us',p.id,'RO');rows.push([S.team,p.num,p.name,madePts('us',p.id),ratio('us',p.id,'1'),ratio('us',p.id,'2'),ratio('us',p.id,'3'),rd,ro,rd+ro,stat('us',p.id,'AST'),stat('us',p.id,'STL'),stat('us',p.id,'TO'),stat('us',p.id,'BLK'),stat('us',p.id,'FOUL'),stat('us',p.id,'FREC')])});S.opponents.forEach(p=>{let rd=stat('opp',p.id,'RD'),ro=stat('opp',p.id,'RO');rows.push([S.opponent,p.num,p.name||'',madePts('opp',p.id),ratio('opp',p.id,'1'),ratio('opp',p.id,'2'),ratio('opp',p.id,'3'),rd,ro,rd+ro,stat('opp',p.id,'AST'),stat('opp',p.id,'STL'),stat('opp',p.id,'TO'),stat('opp',p.id,'BLK'),stat('opp',p.id,'FOUL'),stat('opp',p.id,'FREC')])});let csv=rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(';')).join('\n');let blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`stats_${S.opponent.replace(/[^a-z0-9]+/gi,'_')}_${new Date().toISOString().slice(0,10)}.csv`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)};
 $('#exportHistory').onclick=()=>{if(!S)return;let labels=Object.fromEntries(actionDefs.map(x=>[x[0],x[1]]));let rows=[['Quarto','Tempo','Squadra','Numero','Giocatore','Azione','Punteggio']];historyRows().forEach(e=>{let side=sideOf(e),p=e.playerId?findPlayer(side,e.playerId):null;rows.push(['Q'+e.period,fmt(e.clock),side==='us'?S.team:S.opponent,p?.num??'?',p?.name||'',labels[e.type]||e.label||e.type,`${e.scoreUs}-${e.scoreOpp}`])});let csv=rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(';')).join('\n');let blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`cronologia_${S.opponent.replace(/[^a-z0-9]+/gi,'_')}_${new Date().toISOString().slice(0,10)}.csv`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)};
 window.addEventListener('beforeunload',save);
 (function init(){try{S=JSON.parse(localStorage.getItem(STORE)||'null')}catch(e){S=null}if(S){S.running=false;normalizeState()}$('#resumeBtn').classList.toggle('hidden',!S);renderSavedGames();loadOnline();if(S){$('#teamInput').value=S.team||'ASM70 U14';$('#oppInput').value=S.opponent||'';$('#homeAway').value=S.homeAway||'home';$('#periodLen').value=String(S.periodLen||600);draftOpp=S.opponents.map(p=>({...p}));$('#oppNumbers').value=draftOpp.map(p=>p.num).join(', ');renderOppDraft()}})();
