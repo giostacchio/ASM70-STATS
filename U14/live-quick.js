@@ -1,7 +1,7 @@
 /* U14: solo azioni -> scelta giocatore per nome (alfabetico) e maglia. */
 (function(){
 'use strict';
-let quickSide='us',pendingType=null,lastActionButton=null;
+let pendingType=null,lastActionButton=null;
 function alphaQuick(a,b){
   return String(a.name||'').localeCompare(String(b.name||''),'it',{sensitivity:'base'})||
     (Number(a.num)||0)-(Number(b.num)||0);
@@ -24,18 +24,12 @@ function renderActionCaption(){
   const title=document.querySelector('#quickTitle');
   const hint=document.querySelector('#quickHint');
   if(!title||!hint)return;
-  title.textContent='1. Scegli un’azione';
+  title.textContent='1. Scegli un’azione ASM70';
   hint.textContent='2. Tocca il nome del giocatore a cui assegnarla.';
   document.querySelectorAll('[data-qact]').forEach(b=>b.disabled=!S);
   const more=document.querySelector('#quickMore');
   if(more)more.disabled=!S;
-  document.querySelectorAll('[data-quick-side]').forEach(b=>{
-    const selected=b.dataset.quickSide===quickSide;
-    b.classList.toggle('active',selected);
-    b.setAttribute('aria-pressed',String(selected));
-  });
-  const addOpp=document.querySelector('#addOppInGame');
-  if(addOpp)addOpp.classList.toggle('hidden',quickSide!=='opp');
+
 }
 function closePicker(){
   document.querySelector('#pickBack').classList.add('hidden');
@@ -44,7 +38,7 @@ function closePicker(){
 }
 function commitAction(playerId){
   if(!S||!pendingType)return;
-  const type=pendingType,side=quickSide;
+  const type=pendingType,side='us';
   const p=playerId===null?null:findPlayer(side,playerId);
   if(playerId!==null&&!p){closePicker();return toast('Giocatore non trovato');}
   pendingType=null; // impedisce la doppia registrazione in caso di doppio tocco
@@ -60,28 +54,21 @@ function openPicker(type,trigger){
   if(!S)return toast('Avvia prima una partita');
   const action=actionDefs.find(x=>x[0]===type);
   if(!action||type==='SUB')return;
-  const available=quickSide==='us'?[...S.players].sort(alphaQuick):
-    [...S.opponents].sort((a,b)=>(Number(a.num)||0)-(Number(b.num)||0));
-  const allowUnknown=quickSide==='opp'&&['1M','2M','3M'].includes(type);
-  if(!available.length&&!allowUnknown)return toast(quickSide==='us'?'Nessun giocatore selezionato':'Aggiungi prima i numeri avversari');
+  const available=[...S.players].sort(alphaQuick);
+  if(!available.length)return toast('Nessun giocatore selezionato');
   pendingType=type;lastActionButton=trigger||document.activeElement;
-  const team=quickSide==='us'?S.team:S.opponent;
-  document.querySelector('#pickTitle').textContent=(action[1]||type)+' · '+team;
-  document.querySelector('#pickHint').textContent='Tocca il nome: registrazione immediata.';
+  const team=S.team;
+  document.querySelector('#pickTitle').textContent=(action[1]||type)+' · '+team+' · '+available.length+' giocatori';
+  document.querySelector('#pickHint').textContent='Elenco alfabetico: tocca il nome, oppure scorri per vedere gli altri.';
   let html=available.map(p=>{
-    const points=madePts(quickSide,p.id),fouls=stat(quickSide,p.id,'FOUL');
+    const points=madePts('us',p.id),fouls=stat('us',p.id,'FOUL');
     return '<button type="button" class="pickPlayer" data-pick="'+esc(p.id)+'">'+
       '<strong class="pickJersey">#'+esc(p.num)+'</strong>'+
-      '<span class="pickIdentity"><b class="pickName">'+esc(quickSide==='us'?(p.name||'Giocatore'):(p.name||'Avversario'))+'</b>'+
+      '<span class="pickIdentity"><b class="pickName">'+esc(p.name||'Giocatore')+'</b>'+
       '<small>'+points+' punti · '+fouls+' falli</small></span></button>';
   }).join('');
-  if(allowUnknown){
-    html+='<button type="button" class="pickPlayer unknownPick" data-pick-unknown="1">'+
-      '<strong class="pickJersey">#?</strong><span class="pickIdentity"><b class="pickName">Numero non rilevato</b></span></button>';
-  }
   document.querySelector('#pickGrid').innerHTML=html;
   document.querySelectorAll('[data-pick]').forEach(b=>b.onclick=()=>commitAction(b.dataset.pick));
-  document.querySelectorAll('[data-pick-unknown]').forEach(b=>b.onclick=()=>commitAction(null));
   document.querySelector('#pickBack').classList.remove('hidden');
 }
 function openQuickMore(){
@@ -101,10 +88,6 @@ function openQuickMore(){
 const baseRenderAll=renderAll;
 renderAll=function(){baseRenderAll();renderActionCaption()};
 document.querySelectorAll('[data-qact]').forEach(b=>b.onclick=()=>openPicker(b.dataset.qact,b));
-document.querySelectorAll('[data-quick-side]').forEach(b=>b.onclick=()=>{
-  quickSide=b.dataset.quickSide;
-  renderActionCaption();
-});
 document.querySelector('#quickMore').onclick=openQuickMore;
 document.querySelector('#closePick').onclick=closePicker;
 document.querySelector('#pickBack').onclick=e=>{if(e.target===e.currentTarget)closePicker()};
