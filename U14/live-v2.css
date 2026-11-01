@@ -62,3 +62,57 @@
   .pickSheet{max-height:94vh}
   .pickGrid{grid-template-columns:repeat(5,minmax(0,1fr))}
 }
+
+
+/* U14 semplificata - azioni soltanto, roster modificabile, nomi leggibili */
+.rosterHelp{margin:0 0 11px;color:#5b6d82;font-size:12px;line-height:1.45}
+.rosterGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.rosterManageRow{display:flex;align-items:center;gap:6px;border:1px solid #dce4ee;background:#f7f9fc;border-radius:11px;padding:7px;min-width:0}
+.rosterManageRow.off{opacity:.55}
+.rosterPickMain{flex:1;min-width:0;display:flex;align-items:center;gap:7px;cursor:pointer}
+.rosterPickMain input{width:18px;height:18px;flex:none}
+.rosterPickMain .rnum{flex:none;min-width:42px;font-size:14px;background:#24334a}
+.rosterPickMain .rname{font-size:13px;font-weight:850;line-height:1.2;white-space:normal;overflow-wrap:anywhere;overflow:visible;text-overflow:clip;color:#1c293c}
+.rosterEditBtn,.rosterDeleteBtn{border-radius:8px;padding:8px 7px;font-size:11px;font-weight:850;white-space:nowrap;min-height:36px;flex:none}
+.rosterEditBtn{border:1px solid #bad3ed;background:#e7f1fc;color:#215388}
+.rosterDeleteBtn{border:1px solid #e8c0c0;background:#fff0f0;color:#a12d2d}
+.emptyRoster{grid-column:1/-1;padding:16px;color:#5b6d82}
+.rosterRestoreToggle{border:0;background:transparent;color:#215388;font-weight:800;font-size:12px;text-decoration:underline;padding:10px 0}
+.rosterRestoreGrid{display:grid;gap:7px}
+.restoreRow{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:9px;border-radius:9px;background:#f1f5fa;color:#23344c;font-size:12px}
+.restoreRow button{border:1px solid #b7cce8;background:#fff;border-radius:8px;color:#215388;padding:8px;font-weight:800}
+.rosterEditSheet{background:#fff;color:#23344c;max-width:480px}
+.rosterEditSheet .sheetTop{border-bottom:1px solid #d8e0ea}
+.rosterEditSheet .sheetName{color:#1e2d42}
+.rosterEditSheet .close{background:#e9eef7;color:#2c3c51;border-color:#dae0e8}
+.rosterEditForm{display:grid;gap:7px;padding:16px}
+.rosterEditForm label{font-size:12px;color:#58677a;font-weight:850}
+.rosterEditForm input{height:48px;border:1px solid #ccd7e5;border-radius:10px;padding:10px 12px;font-size:16px;background:#fff;color:#16263a}
+.rosterEditError{min-height:18px;font-size:12px;font-weight:800;color:#a12d2d}
+.rosterEditButtons{display:flex;justify-content:flex-end;gap:8px}
+.simpleCapture{padding:14px}
+.simpleCapture .quickCaptureHead b{font-size:16px}
+.simpleCapture .quickCaptureHead span{font-size:12px}
+.simpleCapture .quickActions{grid-template-columns:repeat(5,minmax(0,1fr))}
+.simpleCapture .quickActions button{font-size:12px;min-height:57px}
+.pickSheet{max-width:720px}
+.pickGrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.pickPlayer{min-height:76px;display:flex;flex-direction:row;align-items:center;justify-content:flex-start;gap:13px;text-align:left;padding:10px 12px}
+.pickPlayer .pickJersey{font-size:28px;min-width:52px;flex:none;line-height:1.1}
+.pickPlayer .pickIdentity{display:flex;flex-direction:column;gap:5px;min-width:0;flex:1}
+.pickPlayer .pickName{font-size:16px;line-height:1.25;color:#fff;white-space:normal;overflow-wrap:anywhere}
+.pickPlayer .pickIdentity small{font-size:10px;color:#abbad0}
+@media(max-width:760px){
+ .rosterGrid{grid-template-columns:1fr}
+ .rosterManageRow{gap:5px;padding:7px 6px}
+ .rosterPickMain .rname{font-size:13px}
+ .simpleCapture .quickActions{grid-template-columns:repeat(3,minmax(0,1fr))}
+ .simpleCapture .quickActions button{font-size:11px;min-height:56px}
+ .pickGrid{grid-template-columns:1fr}
+ .pickPlayer{min-height:68px}
+ .pickPlayer .pickName{font-size:16px}
+}
+@media(orientation:landscape) and (max-height:650px){
+ .simpleCapture .quickActions{grid-template-columns:repeat(6,minmax(0,1fr))}
+ .pickGrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
