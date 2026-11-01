@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#07101f">
 <title>ASM70 · Live Stats V2</title>
 <link rel="stylesheet" href="./live.css">
-<link rel="stylesheet" href="./live-v2.css?v=20261101-roster-simple-1">
+<link rel="stylesheet" href="./live-v2.css?v=20261101-opponent-score-picker-1">
 </head>
 <body>
 <div id="setupView" class="setup">
@@ -29,7 +29,7 @@
         <div id="excludedRosterSection" class="hidden"><button id="toggleExcludedRoster" type="button" class="rosterRestoreToggle">Mostra giocatori esclusi</button><div id="excludedRoster" class="rosterRestoreGrid hidden"></div></div>
       </div>
 
-      <div class="rosterSetup oppSetup">
+      <div class="rosterSetup oppSetup hidden">
         <div class="setupSectionHead"><b>Numeri avversari</b><span>manuali per questa partita</span></div>
         <div class="oppQuickAdd"><input id="oppNumbers" inputmode="numeric" placeholder="Es. 4, 5, 7, 8, 10, 11, 12"><button id="buildOpp">Carica numeri</button></div>
         <div id="oppRosterPreview" class="oppRosterPreview"></div>
@@ -59,17 +59,12 @@
   <main class="content">
     <section id="tabLive">
       <div class="panel">
-        <div class="panelHead"><div class="panelTitle">REGISTRA AZIONE · ASM70 / AVVERSARI</div><div class="courtHead"><span id="teamFouls" class="foulBadge">Falli ASM70 Q1: 0</span><button id="quickUndo" class="miniBtn">↶ Annulla</button></div></div>
+        <div class="panelHead"><div class="panelTitle">ASM70 · REGISTRA AZIONE</div><div class="courtHead"><span id="teamFouls" class="foulBadge">Falli ASM70 Q1: 0</span><button id="quickUndo" class="miniBtn">↶ Annulla</button></div></div>
         <div id="quickCapture" class="quickCapture simpleCapture">
           <div class="quickCaptureHead">
-            <div><b id="quickTitle">1. Tocca l'azione</b><span id="quickHint">2. Scegli il giocatore dall'elenco alfabetico.</span></div>
-            <button id="addOppInGame" class="miniBtn" type="button">+ numero avversario</button>
+            <div><b id="quickTitle">1. Tocca l'azione ASM70</b><span id="quickHint">2. Scegli il giocatore dall'elenco alfabetico.</span></div>
           </div>
-          <div class="quickSideSwitch" role="group" aria-label="Squadra a cui assegnare la statistica">
-            <button type="button" class="active" data-quick-side="us" aria-pressed="true">ASM70</button>
-            <button type="button" data-quick-side="opp" aria-pressed="false">AVVERSARI</button>
-          </div>
-          <div class="quickActions">
+                    <div class="quickActions">
             <button data-qact="1M" class="qgood">+1</button>
             <button data-qact="2M" class="qgood">+2</button>
             <button data-qact="3M" class="qgood">+3</button>
@@ -84,6 +79,16 @@
           </div>
         </div>
         <span id="oppFouls" class="hidden"></span>
+        <button id="addOppInGame" class="hidden" type="button" tabindex="-1">+ numero avversario</button>
+      </div>
+
+      <div class="panel opponentQuickPanel">
+        <div class="opponentQuickHead"><strong>PUNTI AVVERSARI</strong><span>Un tocco, senza scegliere il giocatore</span></div>
+        <div class="opponentQuickActions" aria-label="Punti avversari">
+          <button type="button" data-opp-unknown="1" aria-label="Assegna 1 punto agli avversari">+1</button>
+          <button type="button" data-opp-unknown="2" aria-label="Assegna 2 punti agli avversari">+2</button>
+          <button type="button" data-opp-unknown="3" aria-label="Assegna 3 punti agli avversari">+3</button>
+        </div>
       </div>
 
       <div class="quickHistory panel">
@@ -127,14 +132,15 @@
 <div id="pickBack" class="sheetBack hidden" role="dialog" aria-modal="true" aria-labelledby="pickTitle">
   <div class="sheet pickSheet">
     <div class="sheetTop"><div><div id="pickTitle" class="sheetName">Scegli il giocatore</div><div id="pickHint" class="sheetMini">Tocca il numero per registrare.</div></div><button id="closePick" class="close" aria-label="Annulla la scelta">×</button></div>
-    <div id="pickGrid" class="pickGrid"></div>
+    <div id="pickGrid" class="pickGrid" role="group" aria-label="Giocatori ASM70 in ordine alfabetico"></div>
+    <div class="pickFooter">Se non vedi un nome, scorri l’elenco.</div>
   </div>
 </div>
 <div id="actionBack" class="sheetBack hidden"><div class="sheet"><div class="sheetTop"><div class="sheetPlayer"><div id="sheetNum" class="sheetNum">0</div><div><div id="sheetName" class="sheetName">Giocatore</div><div id="sheetMini" class="sheetMini"></div></div></div><button id="closeSheet" class="close">×</button></div><div id="actions" class="actions"></div></div></div>
 <div id="subBack" class="sheetBack hidden"><div class="sheet"><div class="sheetTop"><div><div class="sheetName">Cambio</div><div id="subTitle" class="sheetMini"></div></div><button id="closeSub" class="close">×</button></div><div id="subGrid" class="subGrid"></div></div></div>
 <div id="toast" class="toast hidden"></div>
 
-<script src="./live-v2.js?v=20261101-roster-simple-1"></script>\n<script src="./live-quick.js?v=20261101-roster-simple-1"></script>
+<script src="./live-v2.js?v=20261101-opponent-score-picker-1"></script>\n<script src="./live-quick.js?v=20261101-opponent-score-picker-1"></script>
 <script>
 document.querySelectorAll('[data-tab-jump]').forEach(b=>b.onclick=()=>{const target=b.dataset.tabJump;const tab=document.querySelector(`.nav [data-tab="${target}"]`);if(tab)tab.click()});
 </script>
