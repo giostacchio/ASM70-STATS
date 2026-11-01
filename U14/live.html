@@ -6,12 +6,12 @@
 <meta name="theme-color" content="#07101f">
 <title>ASM70 · Live Stats V2</title>
 <link rel="stylesheet" href="./live.css">
-<link rel="stylesheet" href="./live-v2.css?v=20261012-quick-1">
+<link rel="stylesheet" href="./live-v2.css?v=20261101-action-first-1">
 </head>
 <body>
 <div id="setupView" class="setup">
   <div class="setupCard">
-    <div class="setupHead"><h1>ASM70 · Live Stats V2</h1><p>Raccolta rapida: giocatore → azione. Cambi in 2 tocchi e roster sempre ordinato per numero.</p></div>
+    <div class="setupHead"><h1>ASM70 · Live Stats V2</h1><p>Raccolta rapida: prima l’azione, poi il giocatore. Cambi in 2 tocchi e roster ordinato per numero.</p></div>
     <div class="setupBody">
       <div class="formgrid">
         <div class="field full"><label>Partita dal calendario U14</label><select id="gameSelect"><option value="">Partita manuale</option></select></div>
@@ -57,38 +57,44 @@
   <main class="content">
     <section id="tabLive">
       <div class="panel">
-        <div class="panelHead"><div class="panelTitle">ASM70 · quintetto in campo</div><div class="courtHead"><span id="teamFouls" class="foulBadge">Falli squadra Q1: 0</span><button id="quickUndo" class="miniBtn">↶ Annulla</button></div></div>
-        <div id="courtPlayers" class="players"></div>
-        <div class="benchLabel">Panchina · tocca chi deve entrare</div><div id="benchPlayers" class="bench"></div>
+        <div class="panelHead"><div class="panelTitle">ASM70 · registrazione rapida</div><div class="courtHead"><span id="teamFouls" class="foulBadge">Falli squadra Q1: 0</span><button id="quickUndo" class="miniBtn">↶ Annulla</button></div></div>
         <div id="quickCapture" class="quickCapture">
           <div class="quickCaptureHead">
-            <div><b id="quickTitle">Seleziona un giocatore in campo</b><span id="quickHint">Poi tocca direttamente l’azione.</span></div>
+            <div><b id="quickTitle">1. Tocca un'azione</b><span id="quickHint">2. Scegli a quale giocatore assegnarla.</span></div>
             <button id="cancelQuick" class="miniBtn hidden">Annulla cambio</button>
+          </div>
+          <div class="quickSideSwitch" role="group" aria-label="Squadra a cui assegnare la statistica">
+            <button type="button" class="active" data-quick-side="us" aria-pressed="true">ASM70</button>
+            <button type="button" data-quick-side="opp" aria-pressed="false">AVVERSARI</button>
           </div>
           <div class="quickActions">
             <button data-qact="1M" class="qgood">+1</button>
             <button data-qact="2M" class="qgood">+2</button>
             <button data-qact="3M" class="qgood">+3</button>
-            <button data-qact="RD" class="qorange">RD</button>
-            <button data-qact="RO" class="qorange">RO</button>
-            <button data-qact="AST" class="qblue">AST</button>
-            <button data-qact="STL" class="qblue">REC</button>
-            <button data-qact="TO" class="qred">PERSA</button>
+            <button data-qact="RD" class="qorange">RIMB. DIF.</button>
+            <button data-qact="RO" class="qorange">RIMB. OFF.</button>
+            <button data-qact="AST" class="qblue">ASSIST</button>
+            <button data-qact="STL" class="qblue">RECUPERO</button>
+            <button data-qact="TO" class="qred">PALLA PERSA</button>
             <button data-qact="FOUL" class="qred">FALLO</button>
-            <button data-qact="FREC" class="qorange">FS</button>
+            <button data-qact="FREC" class="qorange">FALLO SUB.</button>
             <button id="quickMore" class="qmore">ALTRO</button>
           </div>
         </div>
+        <div class="benchLabel">Quintetto · per un cambio tocca prima chi entra dalla panchina</div>
+        <div id="courtPlayers" class="players"></div>
+        <div class="benchLabel">Panchina · tocca chi entra, poi chi esce</div><div id="benchPlayers" class="bench"></div>
+
       </div>
 
       <div class="panel opponentPanel">
-        <div class="panelHead"><div><div class="panelTitle">Avversari · tocca il numero che ha fatto l’azione</div><div class="panelSub">Il punteggio avversario nasce dalle azioni registrate sui numeri.</div></div><div class="courtHead"><span id="oppFouls" class="foulBadge blueBadge">Falli avversari Q1: 0</span><button id="addOppInGame" class="miniBtn">+ numero</button></div></div>
+        <div class="panelHead"><div><div class="panelTitle">Avversari · numeri e statistiche</div><div class="panelSub">Per registrare: scegli AVVERSARI, poi l’azione e infine il numero.</div></div><div class="courtHead"><span id="oppFouls" class="foulBadge blueBadge">Falli avversari Q1: 0</span><button id="addOppInGame" class="miniBtn">+ numero</button></div></div>
         <div id="oppPlayers" class="oppPlayers"></div>
         <div class="unknownScore"><span>Se non riesci a vedere il numero:</span><button data-opp-unknown="1">#? +1</button><button data-opp-unknown="2">#? +2</button><button data-opp-unknown="3">#? +3</button></div>
       </div>
 
       <div class="quickHistory panel">
-        <div class="panelHead"><div><div class="panelTitle">Principio</div><div class="panelSub">Tocca un numero → scegli l’azione → la cronologia si aggiorna da sola.</div></div><button class="miniBtn" data-tab-jump="history">Vedi cronologia</button></div>
+        <div class="panelHead"><div><div class="panelTitle">Principio</div><div class="panelSub">Tocca l’azione → scegli il numero → la cronologia si aggiorna da sola.</div></div><button class="miniBtn" data-tab-jump="history">Vedi cronologia</button></div>
       </div>
     </section>
 
@@ -112,11 +118,17 @@
   </main>
 </div>
 
+<div id="pickBack" class="sheetBack hidden" role="dialog" aria-modal="true" aria-labelledby="pickTitle">
+  <div class="sheet pickSheet">
+    <div class="sheetTop"><div><div id="pickTitle" class="sheetName">Scegli il giocatore</div><div id="pickHint" class="sheetMini">Tocca il numero per registrare.</div></div><button id="closePick" class="close" aria-label="Annulla la scelta">×</button></div>
+    <div id="pickGrid" class="pickGrid"></div>
+  </div>
+</div>
 <div id="actionBack" class="sheetBack hidden"><div class="sheet"><div class="sheetTop"><div class="sheetPlayer"><div id="sheetNum" class="sheetNum">0</div><div><div id="sheetName" class="sheetName">Giocatore</div><div id="sheetMini" class="sheetMini"></div></div></div><button id="closeSheet" class="close">×</button></div><div id="actions" class="actions"></div></div></div>
 <div id="subBack" class="sheetBack hidden"><div class="sheet"><div class="sheetTop"><div><div class="sheetName">Cambio</div><div id="subTitle" class="sheetMini"></div></div><button id="closeSub" class="close">×</button></div><div id="subGrid" class="subGrid"></div></div></div>
 <div id="toast" class="toast hidden"></div>
 
-<script src="./live-v2.js?v=20261012-stable-1"></script>\n<script src="./live-quick.js?v=20261012-quick-2"></script>
+<script src="./live-v2.js?v=20261012-stable-1"></script>\n<script src="./live-quick.js?v=20261101-action-first-1"></script>
 <script>
 document.querySelectorAll('[data-tab-jump]').forEach(b=>b.onclick=()=>{const target=b.dataset.tabJump;const tab=document.querySelector(`.nav [data-tab="${target}"]`);if(tab)tab.click()});
 </script>
