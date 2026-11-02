@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#07101f">
 <title>ASM70 · Live Stats V2</title>
 <link rel="stylesheet" href="./live.css">
-<link rel="stylesheet" href="./live-v2.css?v=20261101-final-report-1">
+<link rel="stylesheet" href="./live-v2.css?v=20261102-cloud-1">
 </head>
 <body>
 <div id="setupView" class="setup">
@@ -36,6 +36,21 @@
         <div class="setupNote">Basta inserire i numeri di maglia separati da virgola o spazio. Non vengono aggiunti al roster ASM70.</div>
       </div>
 
+      <div class="rosterSetup cloudSetup">
+        <div class="setupSectionHead"><b>Archivio online Supabase</b><span id="cloudSetupStatus" class="cloudBadge">Solo locale</span></div>
+        <p class="rosterHelp">Le partite vengono registrate prima sul dispositivo. Dopo l'accesso U14 saranno copiate su Supabase, e potrai recuperarle anche da altri dispositivi con lo stesso account.</p>
+        <div id="cloudLoginForm" class="cloudLoginForm">
+          <label>Email responsabile U14<input type="email" id="cloudEmail" autocomplete="username" placeholder="Email già usata nell'area Admin"></label>
+          <label>Password<input type="password" id="cloudPassword" autocomplete="current-password" placeholder="Password Supabase"></label>
+          <button id="cloudLogin" type="button" class="startBtn">Accedi e sincronizza</button>
+        </div>
+        <div id="cloudLoggedIn" class="cloudLoggedIn hidden">
+          <span>Collegato: <b id="cloudLoggedInName"></b></span>
+          <button id="cloudSignOut" type="button" class="miniBtn">Disconnetti</button>
+        </div>
+        <button id="cloudSyncNow" class="cloudSyncButton" type="button">↻ Sincronizza ora</button>
+        <div id="cloudGames" class="cloudGames"><div class="setupNote">Accedi per vedere le partite online.</div></div>
+      </div>
       <div class="rosterSetup">
         <div class="setupSectionHead"><b>Storico partite salvate</b><button id="backupArchive" class="miniBtn orange">Backup storico JSON</button></div>
         <div id="savedGames"><div class="setupNote">Nessuna partita salvata.</div></div>
@@ -57,6 +72,7 @@
       <div class="scoreCenter"><button id="periodBtn" class="period">Q1</button><div id="clock" class="clock">10:00</div><button id="clockBtn" class="clockBtn">▶</button></div>
       <div class="teamBox away"><div style="text-align:right"><div id="oppNameTop" class="teamName">AVVERSARI</div><div id="oppScore" class="score oppScoreColor">0</div></div></div>
     </div>
+    <div class="cloudInlineBar"><span id="cloudGameStatus" class="cloudBadge">Solo locale · accedi per salvare online</span></div>
     <div class="nav"><button data-tab="live" class="on">Partita</button><button data-tab="history">Cronologia</button><button data-tab="stats">Statistiche</button><button id="setupBack">Impostazioni</button><button id="finishGame">🏁 Fine / Salva</button><button id="newGame" class="red">Nuova partita</button></div>
   </div>
 
@@ -150,7 +166,11 @@
 <div id="toast" class="toast hidden"></div>
 
 <script src="./live-v2.js?v=20261101-final-report-1"></script>\n<script src="./live-quick.js?v=20261101-final-report-1"></script>
+<script src="./live-cloud.js?v=20261102-cloud-1"></script>
 <script>
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>navigator.serviceWorker.register('./sw-live.js').catch(()=>{}));
+}
 document.querySelectorAll('[data-tab-jump]').forEach(b=>b.onclick=()=>{const target=b.dataset.tabJump;const tab=document.querySelector(`.nav [data-tab="${target}"]`);if(tab)tab.click()});
 </script>
 </body>
