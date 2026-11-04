@@ -1,5 +1,24 @@
 (function(){
 'use strict';
+const LR_API='https://gtiescrhzsctcyfjuixq.supabase.co';
+const LR_KEY='sb_publishable_W1Ygs4iWPPv8UUTtjUMetA_TA14SEc-';
+let lrOnlineGames=[],lrGamesLoaded=false,lrGamesError='';
+function onlineGame(id){return lrOnlineGames.find(g=>String(g.id)===String(id))||null}
+function lrGameTime(t){return t?String(t).slice(0,5):''}
+async function loadLROnlineGames(){
+  try{
+    lrGamesError='';
+    const qs='select=id,game_date,game_time,opponent,home_away,venue,address,status,round_label,fip_game_no&order=game_date.asc';
+    const res=await fetch(LR_API+'/rest/v1/games?'+qs,{headers:{apikey:LR_KEY},cache:'no-store'});
+    if(!res.ok)throw new Error('HTTP '+res.status);
+    const rows=await res.json();
+    lrOnlineGames=Array.isArray(rows)?rows:[];
+    lrGamesLoaded=true;
+  }catch(e){
+    lrOnlineGames=[];lrGamesLoaded=true;lrGamesError=e.message||String(e);
+  }
+  renderListaR();
+}
 function ensureLR(){
   if(!state.listR||typeof state.listR!=='object')state.listR={};
   const r=state.listR;
@@ -49,7 +68,7 @@ if(main&&!document.getElementById('pageListaR'))main.insertAdjacentHTML('beforee
     <div><label>2° sponsor</label><input id="lrSponsor2"></div>
   </div></div></section>
   <section class="card" style="margin-top:12px"><h2>📅 Gara</h2><div class="card-body"><div class="lr-grid">
-    <div class="wide"><label>Data / evento dal foglio presenze</label><select id="lrEvent" onchange="lrSelectEvent(this.value)"></select></div>
+    <div class="wide"><label>Partita ASM70 da calendario/Admin online</label><select id="lrEvent" onchange="lrSelectEvent(this.value)"></select></div>
     <div><label>N. gara</label><input id="lrGameNumber" oninput="lrGameField('gameNumber',this.value)"></div>
     <div><label>Avversario</label><input id="lrOpponent" oninput="lrGameField('opponent',this.value)"></div>
     <div><label>Campo / luogo</label><input id="lrVenue" oninput="lrGameField('venue',this.value)"></div>
@@ -83,12 +102,17 @@ function currentGame(create=true){
   const r=lr(),id=r.currentEventId;
   if(!id)return null;
   if(create&&!r.games[id])r.games[id]={gameNumber:'',opponent:'',venue:'',selected:[]};
-  const g=r.games[id];
+  const g=r.games[id],src=onlineGame(id);
   if(g&&!Array.isArray(g.selected))g.selected=[];
+  if(g&&src){
+    if(!g.gameNumber&&src.fip_game_no!=null)g.gameNumber=String(src.fip_game_no);
+    if(!g.opponent&&src.opponent)g.opponent=src.opponent;
+    if(!g.venue&&src.venue)g.venue=src.venue;
+  }
   return g||null;
 }
 function saveRenderPrint(){persist();renderLRPrint()}
-window.lrSelectEvent=function(id){lr().currentEventId=id;currentGame(true);persist();renderListaR()};
+window.lrSelectEvent=function(id){lr().currentEventId=id;const g=currentGame(true),src=onlineGame(id);if(g&&src){if(src.fip_game_no!=null)g.gameNumber=String(src.fip_game_no);if(src.opponent)g.opponent=src.opponent;if(src.venue)g.venue=src.venue}persist();renderListaR()};
 window.lrGameField=function(k,v){const g=currentGame(true);if(!g)return;g[k]=v;saveRenderPrint()};
 window.lrTeamField=function(k,v){lr().team[k]=v;saveRenderPrint()};
 window.lrMeta=function(pid,k,v){
@@ -112,19 +136,27 @@ window.lrPrint=function(){renderLRPrint();document.body.classList.add('lr-print'
 window.addEventListener('afterprint',()=>document.body.classList.remove('lr-print'));
 
 function eventOptions(){
-  const opts=state.events.map(e=>'<option value="'+esc(e.id)+'">'+fmtDate(e.date)+' · '+esc(e.type)+(e.note?' · '+esc(e.note):'')+'</option>');
-  return '<option value="">— Seleziona gara/data —</option>'+opts.join('');
+  if(!lrGamesLoaded)return '<option value="">— Caricamento partite ASM70 online… —</option>';
+  if(lrGamesError)return '<option value="">— Partite online non disponibili —</option>';
+  if(!lrOnlineGames.length)return '<option value="">— Nessuna partita nel calendario ASM70 —</option>';
+  const opts=lrOnlineGames.map(g=>{
+    const where=g.home_away==='away'?'Trasferta':'Casa';
+    const n=g.fip_game_no!=null?' · gara '+g.fip_game_no:'';
+    const tm=lrGameTime(g.game_time);
+    return '<option value="'+esc(g.id)+'">'+fmtDate(g.game_date)+(tm?' '+tm:'')+' · '+where+' · '+esc(g.opponent||'Avversario')+n+'</option>';
+  });
+  return '<option value="">— Seleziona partita ASM70 —</option>'+opts.join('');
 }
 function field(id,val){const e=document.getElementById(id);if(e)e.value=val||''}
 function renderListaR(){
   const r=lr();
   const sel=document.getElementById('lrEvent');if(!sel)return;
   sel.innerHTML=eventOptions();
-  if(r.currentEventId&&!state.events.some(e=>e.id===r.currentEventId))r.currentEventId='';
-  sel.value=r.currentEventId||'';
+  const src=onlineGame(r.currentEventId);
+  sel.value=src?r.currentEventId:'';
   field('lrTeamName',r.team.name);field('lrTeamCode',r.team.code);field('lrColor',r.team.color);field('lrSponsor1',r.team.sponsor1);field('lrSponsor2',r.team.sponsor2);
   ['lrTeamName','lrTeamCode','lrColor','lrSponsor1','lrSponsor2'].forEach(id=>{const map={lrTeamName:'name',lrTeamCode:'code',lrColor:'color',lrSponsor1:'sponsor1',lrSponsor2:'sponsor2'};document.getElementById(id).oninput=e=>lrTeamField(map[id],e.target.value)});
-  const g=currentGame(false);field('lrGameNumber',g?.gameNumber);field('lrOpponent',g?.opponent);field('lrVenue',g?.venue);
+  const g=src?currentGame(false):null;field('lrGameNumber',g?.gameNumber);field('lrOpponent',g?.opponent);field('lrVenue',g?.venue);
   const selected=new Set(g?.selected||[]);
   const tb=document.getElementById('lrPlayers');
   if(!state.players.length){tb.innerHTML='<tr><td colspan="8">Nessun giocatore nella rosa.</td></tr>'}else{
@@ -146,18 +178,18 @@ function renderListaR(){
 }
 function renderLRPrint(){
   const out=document.getElementById('lrPrint');if(!out)return;
-  const r=lr(),g=currentGame(false),ev=state.events.find(e=>e.id===r.currentEventId),selected=new Set(g?.selected||[]);
+  const r=lr(),g=currentGame(false),ev=onlineGame(r.currentEventId),selected=new Set(g?.selected||[]);
   const players=state.players.filter(p=>selected.has(p.id));
   const rows=players.map(p=>{const m=r.playerMeta[p.id]||{};return '<tr><td>'+esc(m.cf||'')+'</td><td>'+esc(m.jersey??p.jersey_number??'')+'</td><td>'+esc(p.name)+'</td><td>'+esc(m.dob?fmtDate(m.dob):'')+'</td><td>'+esc(((m.docType||'')+' '+(m.docNum||'')).trim())+'</td><td>'+(m.loan?'Sì':'')+'</td></tr>'}).join('');
   const staffRows=r.staff.filter(s=>s.name||s.role).map(s=>'<tr><td>'+esc(s.role||'')+'</td><td>'+esc(s.name||'')+'</td><td>'+esc(s.card||'')+'</td><td>'+esc(s.doc||'')+'</td></tr>').join('');
   out.innerHTML='<h3>FEDERAZIONE ITALIANA PALLACANESTRO</h3><h2>LISTA R · PREPARAZIONE</h2>'+
-  '<div class="print-meta"><div><b>Società:</b> '+esc(r.team.name||'')+'</div><div><b>Cod. FIP:</b> '+esc(r.team.code||'')+'</div><div><b>1° sponsor:</b> '+esc(r.team.sponsor1||'')+'</div><div><b>2° sponsor:</b> '+esc(r.team.sponsor2||'')+'</div><div><b>Gara n.:</b> '+esc(g?.gameNumber||'')+'</div><div><b>Data:</b> '+esc(ev?fmtDate(ev.date):'')+'</div><div><b>Avversario:</b> '+esc(g?.opponent||'')+'</div><div><b>Colore maglia:</b> '+esc(r.team.color||'')+'</div></div>'+
+  '<div class="print-meta"><div><b>Società:</b> '+esc(r.team.name||'')+'</div><div><b>Cod. FIP:</b> '+esc(r.team.code||'')+'</div><div><b>1° sponsor:</b> '+esc(r.team.sponsor1||'')+'</div><div><b>2° sponsor:</b> '+esc(r.team.sponsor2||'')+'</div><div><b>Gara n.:</b> '+esc(g?.gameNumber||'')+'</div><div><b>Data:</b> '+esc(ev?fmtDate(ev.game_date):'')+'</div><div><b>Avversario:</b> '+esc(g?.opponent||'')+'</div><div><b>Colore maglia:</b> '+esc(r.team.color||'')+'</div></div>'+
   '<h3>ELENCO ATLETI DA ISCRIVERE A REFERTO · '+players.length+'/12</h3><table><thead><tr><th>Codice fiscale</th><th>#</th><th>Cognome e nome</th><th>Data nascita</th><th>Documento</th><th>Prestito</th></tr></thead><tbody>'+rows+'</tbody></table>'+
   (staffRows?'<h3 style="margin-top:14px">STAFF / DIRIGENTI</h3><table><thead><tr><th>Ruolo</th><th>Nome e cognome</th><th>N. tessera</th><th>Documento</th></tr></thead><tbody>'+staffRows+'</tbody></table>':'')+
   '<p style="font-size:9px;margin-top:14px">Stampa di supporto interna. Verificare e generare la Lista R ufficiale tramite i servizi FIP.</p>';
 }
 const oldRenderRoster=renderRoster;
 renderRoster=function(){oldRenderRoster();renderListaR()};
-ensureLR();renderListaR();
+ensureLR();renderListaR();loadLROnlineGames();
 if(localStorage.getItem(KEY+'_page')==='listaR')showPage('listaR',false);
 })();
