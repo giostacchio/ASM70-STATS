@@ -1,4 +1,4 @@
-/* ASM70 U14 Live Stats - Cloud Sync v1, 2026-11-02.
+/* ASM70 U14 Live Stats - Cloud Sync v2, 2026-11-07.
  * Local-first. Existing localStorage archives are never deleted or overwritten by the cloud.
  * Uses the same authenticated Supabase session as U14/admin.html.
  */
@@ -119,22 +119,58 @@ async function flush(){
 }
 function queueLocalHistory(){
   const remote=new Set(seenOnline.keys());
-  getArchive().forEach(rec=>{
-    // Import old local games only if they do not already exist in the cloud.
-    if(rec?.archiveId&&!remote.has(rec.archiveId))enqueue(rec,false);
+  const local=getArchive();
+  let changedIds=false;
+  local.forEach(rec=>{
+    if(!rec||!Array.isArray(rec.players)||!Array.isArray(rec.events))return;
+    const before=rec.archiveId;
+    const id=ensureArchiveId(rec);
+    if(!before&&id)changedIds=true;
+    if(!remote.has(id))enqueue(rec,false);
   });
+  if(changedIds)setArchive(local);
   if(S)enqueue(S,false);
+}
+function mirrorCloudToLocal(){
+  if(!Array.isArray(latestCloud)||!latestCloud.length)return;
+  const local=getArchive();
+  const ids=new Set(local.map(x=>x?.archiveId).filter(Boolean));
+  let added=0;
+  latestCloud.forEach(row=>{
+    if(row?.status!=='final'||!row?.state||!Array.isArray(row.state.players)||!Array.isArray(row.state.events))return;
+    const rec=JSON.parse(JSON.stringify(row.state));
+    rec.archiveId=row.archive_id||rec.archiveId||ensureArchiveId(rec);
+    if(ids.has(rec.archiveId))return;
+    local.push(rec);ids.add(rec.archiveId);added++;
+  });
+  if(added){
+    local.sort((a,b)=>String(b.finalizedAt||b.gameDate||b.createdAt||'').localeCompare(String(a.finalizedAt||a.gameDate||a.createdAt||'')));
+    setArchive(local);
+    renderSavedGames();
+  }
+  if(!S){
+    const open=latestCloud.find(row=>row?.status==='in_progress'&&row?.state&&Array.isArray(row.state.players)&&Array.isArray(row.state.events));
+    if(open){
+      S=JSON.parse(JSON.stringify(open.state));
+      S.archiveId=open.archive_id||S.archiveId||ensureArchiveId(S);
+      S.running=false;
+      localStorage.setItem(STORE,JSON.stringify(S));
+      const resume=$cloud('resumeBtn');if(resume)resume.classList.remove('hidden');
+    }
+  }
 }
 async function loadCloudIndex(migrate=true){
   if(cloudLoading||!getSession()?.access_token||!isOnline())return;
   cloudLoading=true;
   try{
     await authenticate();
-    const res=await request('/rest/v1/'+TABLE+'?select=archive_id,status,game_date,opponent,score_us,score_them,updated_at&order=updated_at.desc&limit=100');
+    const res=await request('/rest/v1/'+TABLE+'?select=archive_id,status,game_date,opponent,score_us,score_them,updated_at,state&order=updated_at.desc&limit=100');
     const data=await res.json();
     latestCloud=Array.isArray(data)?data:[];
     latestCloud.forEach(r=>seenOnline.set(r.archive_id,r));
-    lastError='';renderCloudList();
+    lastError='';
+    mirrorCloudToLocal();
+    renderCloudList();
     if(migrate)queueLocalHistory();
     cloudStatus();
   }catch(e){lastError=e?.message||'Errore lettura archivio';cloudStatus();}
