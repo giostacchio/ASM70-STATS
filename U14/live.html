@@ -38,7 +38,7 @@
 
       <div class="rosterSetup cloudSetup">
         <div class="setupSectionHead"><b>Archivio online Supabase</b><span id="cloudSetupStatus" class="cloudBadge">Solo locale</span></div>
-        <p class="rosterHelp">Le partite vengono registrate prima sul dispositivo. Dopo l'accesso U14 saranno copiate su Supabase, e potrai recuperarle anche da altri dispositivi con lo stesso account.</p>
+        <p class="rosterHelp">Le partite vengono registrate prima sul dispositivo. Con lo stesso account U14, lo storico locale viene caricato automaticamente su Supabase e le partite già presenti online vengono riportate anche sul dispositivo che stai usando.</p>
         <div id="cloudLoginForm" class="cloudLoginForm">
           <label>Email responsabile U14<input type="email" id="cloudEmail" autocomplete="username" placeholder="Email già usata nell'area Admin"></label>
           <label>Password<input type="password" id="cloudPassword" autocomplete="current-password" placeholder="Password Supabase"></label>
@@ -166,7 +166,7 @@
 <div id="toast" class="toast hidden"></div>
 
 <script src="./live-v2.js?v=20261101-final-report-1"></script>\n<script src="./live-quick.js?v=20261101-final-report-1"></script>
-<script src="./live-cloud.js?v=20261102-cloud-1"></script>
+<script src="./live-cloud.js?v=20261107-cloud-2"></script>
 <script>
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>navigator.serviceWorker.register('./sw-live.js').catch(()=>{}));
