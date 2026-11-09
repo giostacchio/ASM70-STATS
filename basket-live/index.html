@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0a1525">
+<title>ASM70 • Basket Live</title>
+<style>
+:root{color-scheme:dark;--bg:#091424;--panel:#14263c;--border:#314764;--text:#f2f7ff;--muted:#b2c2d6;--accent:#f8bc46;--green:#66d6ae;--warn:#ff7982}*{box-sizing:border-box}html,body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--text)}button,input,select{font:inherit}button{touch-action:manipulation;cursor:pointer}button:disabled{opacity:.5}a{color:#a7d3ff}
+main{max-width:900px;margin:auto;padding:16px 12px 70px}.brand{display:flex;justify-content:space-between;gap:10px;align-items:center;margin:0 0 16px}.brand strong{font-size:22px;letter-spacing:.02em}.brand strong span{color:var(--accent)}.status{font-size:11px;font-weight:800;background:#244158;padding:7px 10px;border-radius:30px;white-space:nowrap}.status.good{background:#165943;color:#a9ffda}.status.bad{background:#5a3037;color:#ffd0d2}
+.panel{background:var(--panel);border:1px solid var(--border);border-radius:18px;padding:16px;margin:0 0 15px}.panel h2{font-size:17px;margin:0 0 14px}.muted{font-size:13px;color:var(--muted);line-height:1.55}.field-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.field{min-width:0}.field label{display:block;font-weight:700;font-size:12px;color:var(--muted);margin:0 0 6px}.field input,.field select{background:#0a1b2d;border:1px solid #526783;color:white;border-radius:10px;padding:11px 10px;width:100%;min-width:0}.wide{grid-column:1/-1}
+.btn{border:1px solid #526b89;background:#283d57;color:white;font-weight:800;border-radius:11px;padding:11px 10px;min-height:43px}.btn:active{filter:brightness(1.25)}.btn.primary{background:var(--accent);border-color:var(--accent);color:#131a24}.btn.green{background:#217a5b;border-color:#309f7a}.btn.danger{background:#73313a;border-color:#a54854}.btn.full{width:100%}.btn.big{font-size:17px;padding:14px}
+.columns{display:grid;grid-template-columns:1fr 1fr;gap:10px}.team{background:#091b2d;border:1px solid #3d5878;border-radius:14px;padding:12px 9px;text-align:center;min-width:0}.team-name{font-size:clamp(14px,3.5vw,21px);font-weight:850;overflow-wrap:anywhere;min-height:42px;display:flex;align-items:center;justify-content:center}.score{font-size:clamp(58px,13vw,99px);line-height:1;font-weight:950;letter-spacing:-.04em;font-variant-numeric:tabular-nums;margin:5px 0 14px}.points{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}.points button{padding:15px 1px;font-size:20px}.other{display:flex;gap:5px;justify-content:center;align-items:center;flex-wrap:wrap;margin-top:10px}.other button{font-size:12px;padding:9px 8px}.info-strip{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:12px;margin-top:10px}
+.clock{font-size:clamp(65px,14vw,104px);font-weight:950;text-align:center;line-height:1.1;font-variant-numeric:tabular-nums;letter-spacing:-.03em}.clock.low{color:var(--warn)}.period{text-align:center;font-size:18px;color:var(--accent);font-weight:850;margin:4px 0 15px}.actions{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.actions2{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:8px}.utility{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.utility .btn{flex:1 1 120px}.preview{position:relative;aspect-ratio:16/9;background:linear-gradient(120deg,#3b4857,#172736);border-radius:10px;overflow:hidden;margin:10px 0}.preview:before{content:"ANTEPRIMA GRAFICA SUL VIDEO";color:#d7e4f4a0;position:absolute;top:34%;left:0;right:0;text-align:center;font-size:11px;letter-spacing:.14em}.preview iframe{position:absolute;width:100%;height:100%;border:0;pointer-events:none}
+details{margin:12px 0}summary{font-weight:800;cursor:pointer}ol{padding-left:20px}.hint{font-size:13px;line-height:1.55;color:var(--muted)}.hidden{display:none!important}.warn{color:#ffd1a1}#toast{position:fixed;z-index:10;bottom:15px;left:50%;transform:translateX(-50%);max-width:95%;background:#eef5ff;color:#0c223e;padding:11px 16px;border-radius:10px;font-weight:800;box-shadow:0 8px 25px #0008;display:none;text-align:center}
+.overlay-page{background:transparent!important;overflow:hidden;width:100%;height:100%;color:white}.overlay-page #main{display:none}.overlay-page #overlay{display:block}.overlay-page #toast{display:none!important}
+#overlay{display:none;position:fixed;inset:0;pointer-events:none;background:transparent}.scorebar{position:absolute;left:5%;bottom:5%;width:90%;height:14%;display:grid;grid-template-columns:minmax(0,1fr) minmax(110px,.37fr) minmax(0,1fr);box-shadow:0 6px 22px #0008;font-variant-numeric:tabular-nums}.bar-team{display:flex;align-items:center;justify-content:space-between;gap:2%;background:#12243de8;border:2px solid #8192ae;padding:1% 3%;min-width:0}.bar-team:first-child{border-radius:10px 0 0 10px}.bar-team:last-child{flex-direction:row-reverse;border-radius:0 10px 10px 0}.bar-name{font-size:clamp(12px,2.55vw,44px);font-weight:950;white-space:nowrap;text-overflow:ellipsis;overflow:hidden}.bar-score{font-size:clamp(25px,4.5vw,85px);font-weight:1000;min-width:1.5em;text-align:center}.bar-mid{background:#f8bc46;color:#14202e;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2% 1%;font-weight:900}.bar-time{font-size:clamp(13px,2.45vw,48px);line-height:1.1;white-space:nowrap}.bar-quarter{font-size:clamp(9px,1.1vw,20px);white-space:nowrap}.bar-extra{position:absolute;bottom:21%;width:100%;left:0;text-align:center;font-size:clamp(10px,1.35vw,21px);font-weight:850;text-shadow:0 2px 7px #000}.bar-extra span{background:#14243ddd;border-radius:5px;padding:5px 10px}
+@media(max-width:420px){.panel{padding:11px}.brand strong{font-size:18px}.score{font-size:64px}.actions{gap:5px}.btn{padding:9px 6px}.scorebar{grid-template-columns:minmax(0,1fr) 23% minmax(0,1fr)}}
+</style></head>
+<body>
+<div id="overlay">
+ <div class="bar-extra"><span id="o-extras">FALLI 0 • 0</span></div>
+ <div class="scorebar">
+  <div class="bar-team"><div class="bar-name" id="o-home">ASM70</div><div class="bar-score" id="o-hs">0</div></div>
+  <div class="bar-mid"><div class="bar-time" id="o-time">10:00</div><div class="bar-quarter" id="o-q">1° QUARTO</div></div>
+  <div class="bar-team"><div class="bar-name" id="o-away">OSPITI</div><div class="bar-score" id="o-as">0</div></div>
+ </div>
+</div>
+<main id="main">
+ <div class="brand"><strong><span>ASM70</span> BASKET LIVE <small style="font-size:10px;color:#b4c5d9">V2</small></strong><span class="status" id="status">CONNESSIONE</span></div>
+ <section class="panel" id="setup">
+  <h2>Nuova partita</h2>
+  <div class="field-grid">
+   <div class="field"><label for="cat">Categoria</label><select id="cat"><option>U13</option><option selected>U14</option><option>U15</option><option>Esordienti</option><option>Altro</option></select></div>
+   <div class="field"><label for="mins">Minuti per quarto</label><select id="mins"><option value="8">8 min</option><option value="10" selected>10 min</option><option value="12">12 min</option></select></div>
+   <div class="field"><label for="home">Squadra casa</label><input id="home" value="ASM70" maxlength="28"></div>
+   <div class="field"><label for="away">Squadra ospite</label><input id="away" placeholder="Es. LECCO" maxlength="28"></div>
+  </div>
+  <button class="btn primary full big" id="create" style="margin-top:16px">CREA PARTITA</button>
+  <p class="hint">La partita viene salvata online, separatamente dalle statistiche ASM70. Non avvia nessuna diretta: per inviare il video su YouTube si usa PRISM.</p>
+ </section>
+ <div id="control" class="hidden">
+  <section class="panel">
+   <div class="columns">
+    <div class="team">
+     <div class="team-name" id="hname">ASM70</div><div class="score" id="hscore">0</div>
+     <div class="points"><button class="btn primary" data-do="h1">+1</button><button class="btn primary" data-do="h2">+2</button><button class="btn primary" data-do="h3">+3</button></div>
+     <div class="other"><button class="btn" data-do="hm1">−1</button><button class="btn" data-do="hf1">+ fallo</button><button class="btn" data-do="hfm1">− fallo</button></div>
+     <div class="info-strip"><span id="hf">Falli 0</span><button class="btn" data-do="hp">Possesso</button></div>
+    </div>
+    <div class="team">
+     <div class="team-name" id="aname">AVVERSARI</div><div class="score" id="ascore">0</div>
+     <div class="points"><button class="btn primary" data-do="a1">+1</button><button class="btn primary" data-do="a2">+2</button><button class="btn primary" data-do="a3">+3</button></div>
+     <div class="other"><button class="btn" data-do="am1">−1</button><button class="btn" data-do="af1">+ fallo</button><button class="btn" data-do="afm1">− fallo</button></div>
+     <div class="info-strip"><span id="af">Falli 0</span><button class="btn" data-do="ap">Possesso</button></div>
+    </div>
+   </div>
+  </section>
+  <section class="panel">
+   <div class="clock" id="clock">10:00</div><div class="period" id="period">1° QUARTO</div>
+   <div class="actions"><button class="btn" data-do="qprev">◀ Quarto</button><button class="btn green big" id="toggle" data-do="toggle">▶ AVVIA</button><button class="btn" data-do="qnext">Quarto ▶</button></div>
+   <div class="actions2"><button class="btn" data-do="minus10">−10 secondi</button><button class="btn" data-do="plus10">+10 secondi</button><button class="btn danger" data-do="reset">↻ Reimposta tempo</button><button class="btn" data-do="undo">↶ Annulla ultima</button></div>
+   <div class="actions2"><button class="btn" data-do="break">INTERVALLO</button><button class="btn danger" data-do="final">FINALE</button></div>
+   <p class="muted" style="text-align:center">Il cronometro è manuale, non collegato a quello ufficiale. Ogni aggiornamento viene inviato alla grafica su YouTube.</p>
+  </section>
+  <section class="panel">
+   <h2>Collegamento al video</h2>
+   <div class="utility"><button class="btn primary" id="copy-overlay">COPIA LINK OVERLAY</button><button class="btn" id="copy-control">COPIA LINK REGIA</button></div>
+   <div class="preview" id="preview"></div>
+   <p class="muted">Il link OVERLAY va inserito una sola volta in PRISM come sorgente Web. Il link REGIA è riservato: consente di modificare il risultato.</p>
+   <details><summary>Come usare un solo telefono con PRISM e YouTube</summary>
+   <ol class="hint"><li>Installa PRISM Live Studio su Android e collega il tuo canale YouTube abilitato alle dirette.</li><li>In PRISM aggiungi la sorgente Widget → Web usando il LINK OVERLAY e allargala al formato video 16:9.</li><li>Imposta la diretta YouTube come Non in elenco; disattiva eventuale registrazione locale e avvia la diretta.</li><li>In Android abilita per PRISM la visualizzazione sopra altre app e la trasmissione in background; disabilita le limitazioni batteria se necessario.</li><li>Ritorna al browser per segnare i punti: PRISM deve continuare a riprendere e trasmettere.</li><li>Alla fine torna in PRISM e termina completamente la diretta; controlla l'archivio in YouTube Studio.</li></ol>
+   <p class="hint warn">Prima di una partita vera fai una prova di 3-5 minuti: la videocamera in background e la connessione possono comportarsi diversamente a seconda del telefono.</p>
+   </details>
+   <details><summary>Modifica nomi delle squadre</summary><div class="field-grid" style="margin-top:12px"><div class="field"><label>Casa</label><input id="edit-home"></div><div class="field"><label>Ospiti</label><input id="edit-away"></div></div><button class="btn" id="save-names" style="margin-top:8px">Salva nomi</button></details>
+   <button class="btn full" id="new-game" style="margin-top:10px">Nuova partita (non cancella questa)</button>
+  </section>
+ </div>
+</main>
+<div id="toast" role="status" aria-live="polite"></div>
+<script>
+(function(){
+"use strict";
+const PROJECT_URL="https://gtiescrhzsctcyfjuixq.supabase.co";
+const PUBLISHABLE_KEY="sb_publishable_W1Ygs4iWPPv8UUTtjUMetA_TA14SEc-";
+const $=id=>document.getElementById(id);
+const params=new URLSearchParams(location.search);
+const overlay=params.get("mode")==="overlay";
+const gameId=params.get("game")||"";
+let id=gameId,token=params.get("key")||"",g=null,version=0,serverOffset=0,queue=Promise.resolve(),undoHistory=[],busy=false;
+const c=x=>JSON.parse(JSON.stringify(x));
+const clip=(v,min,max)=>Math.max(min,Math.min(max,v));
+const now=()=>Date.now()+serverOffset;
+const quarterLabel=q=>q<=4?q+"° QUARTO":"SUPPL. "+(q-4);
+function remaining(s=g){if(!s)return 0;let ms=Math.max(0,Number(s.clock_ms)||0);if(s.clock_running&&s.clock_anchor!==null)ms-=Math.max(0,now()-Number(s.clock_anchor));return Math.max(0,ms)}
+function fmt(ms){const secs=Math.max(0,Math.ceil(ms/1000));return Math.floor(secs/60)+":"+String(secs%60).padStart(2,"0")}
+function settle(s){s.clock_ms=Math.round(remaining(s));s.clock_anchor=s.clock_running?now():null;if(s.clock_ms<=0){s.clock_running=false;s.clock_anchor=null}}
+function toast(m){if(overlay)return;const el=$("toast");el.textContent=m;el.style.display="block";clearTimeout(toast.timer);toast.timer=setTimeout(()=>el.style.display="none",3100)}
+function status(m,good){if(overlay)return;const el=$("status");el.textContent=m;el.className="status "+(good?"good":"bad")}
+async function rpc(name,body){const t0=Date.now();const r=await fetch(PROJECT_URL+"/rest/v1/rpc/asm70_basket_"+name,{method:"POST",cache:"no-store",headers:{"apikey":PUBLISHABLE_KEY,"Content-Type":"application/json"},body:JSON.stringify(body)});const raw=await r.text();let data;try{data=raw?JSON.parse(raw):null}catch{throw Error("Risposta non valida dal server")}if(!r.ok)throw Error(data&&data.message?data.message:"Errore connessione "+r.status);if(data&&data.server_time)serverOffset=Number(data.server_time)-(t0+Date.now())/2;return data}
+function makeUrl(mode,secret){const u=new URL(location.href);u.search="";u.searchParams.set("mode",mode);u.searchParams.set("game",id);if(secret&&token)u.searchParams.set("key",token);return u.toString()}
+function generateToken(){const b=new Uint8Array(32);crypto.getRandomValues(b);return Array.from(b,v=>v.toString(16).padStart(2,"0")).join("")}
+function saveToken(){if(id&&token)try{localStorage.setItem("asm70-basket-token-"+id,token)}catch{}}
+function draw(){
+ if(!g)return;
+ $("o-home").textContent=g.home;$("o-away").textContent=g.away;$("o-hs").textContent=g.score_home;$("o-as").textContent=g.score_away;
+ $("o-q").textContent=quarterLabel(g.quarter);
+ $("o-extras").textContent="FALLI "+g.fouls_home+"   •   "+g.fouls_away+"   "+(g.possession==="h"?"◀ POSSESSO":g.possession==="a"?"POSSESSO ▶":"");
+ drawClock();
+ if(overlay)return;
+ $("setup").classList.add("hidden");$("control").classList.remove("hidden");
+ $("hname").textContent=g.home;$("aname").textContent=g.away;$("hscore").textContent=g.score_home;$("ascore").textContent=g.score_away;
+ $("hf").textContent="Falli "+g.fouls_home;$("af").textContent="Falli "+g.fouls_away;$("period").textContent=quarterLabel(g.quarter);
+ $("toggle").textContent=g.clock_running?"❚❚ PAUSA":"▶ AVVIA";
+ if(!$("preview").firstChild){const f=document.createElement("iframe");f.src=makeUrl("overlay",false);f.title="Anteprima grafica";f.loading="lazy";$("preview").appendChild(f)}
+}
+function drawClock(){if(!g)return;const t=g.status==="final"?"FINALE":g.status==="break"?"INTERVALLO":fmt(remaining());$("o-time").textContent=t;
+ if(!overlay){$("clock").textContent=fmt(remaining());$("clock").classList.toggle("low",remaining()<60000)}}
+function stamp(d){g=d.game;version=Number(d.version);draw()}
+async function fetchLatest(force){if(!id)return;const r=await rpc("read",{p_id:id});if(!r)throw Error("Partita non trovata");if(force||!g||Number(r.version)>version)stamp(r)}
+async function create(){
+ const h=$("home").value.trim(),a=$("away").value.trim();if(!h||!a){toast("Inserisci entrambe le squadre");return}
+ const b=$("create");b.disabled=true;
+ try{
+  token=generateToken();g={home:h,away:a,category:$("cat").value,score_home:0,score_away:0,fouls_home:0,fouls_away:0,quarter:1,minutes:Number($("mins").value),clock_ms:Number($("mins").value)*60000,clock_running:false,clock_anchor:null,possession:"",status:"live"};
+  const d=await rpc("create",{p_game:g,p_token:token});id=d.id;stamp(d);saveToken();
+  const u=new URL(location.href);u.search="?mode=control&game="+encodeURIComponent(id);history.replaceState({},"",u.toString());status("ONLINE",true);toast("Partita creata: copia il link OVERLAY");
+ }catch(e){g=null;toast(e.message);status("ERRORE",false)}
+ finally{b.disabled=false}
+}
+function change(action){
+ if(!g||!token)return toast("Apri il link REGIA autorizzato");
+ queue=queue.then(async()=>{
+  const previous=c(g),s=c(g);settle(s);
+  const score=(side,n)=>{const k="score_"+side;s[k]=clip(s[k]+n,0,999)};
+  const foul=(side,n)=>{const k="fouls_"+side;s[k]=clip(s[k]+n,0,99)};
+  if(action==="h1")score("home",1);else if(action==="h2")score("home",2);else if(action==="h3")score("home",3);
+  else if(action==="a1")score("away",1);else if(action==="a2")score("away",2);else if(action==="a3")score("away",3);
+  else if(action==="hm1")score("home",-1);else if(action==="am1")score("away",-1);
+  else if(action==="hf1")foul("home",1);else if(action==="hfm1")foul("home",-1);
+  else if(action==="af1")foul("away",1);else if(action==="afm1")foul("away",-1);
+  else if(action==="hp")s.possession=s.possession==="h"?"":"h";
+  else if(action==="ap")s.possession=s.possession==="a"?"":"a";
+  else if(action==="toggle"){s.clock_running=!(s.clock_running&&s.clock_ms>0);if(s.clock_ms===0)s.clock_running=false;s.clock_anchor=s.clock_running?now():null;s.status="live"}
+  else if(action==="plus10"){s.clock_ms=clip(s.clock_ms+10000,0,900000);s.clock_anchor=s.clock_running?now():null}
+  else if(action==="minus10"){s.clock_ms=Math.max(0,s.clock_ms-10000);if(!s.clock_ms)s.clock_running=false;s.clock_anchor=s.clock_running?now():null}
+  else if(action==="reset"){if(!confirm("Reimpostare il cronometro del quarto?"))return;s.clock_running=false;s.clock_anchor=null;s.clock_ms=(s.quarter>4?5:s.minutes)*60000}
+  else if(action==="qnext"||action==="qprev"){s.quarter=clip(s.quarter+(action==="qnext"?1:-1),1,20);s.fouls_home=0;s.fouls_away=0;s.clock_ms=(s.quarter>4?5:s.minutes)*60000;s.clock_running=false;s.clock_anchor=null;s.status="live"}
+  else if(action==="break"){s.clock_running=false;s.clock_anchor=null;s.status=s.status==="break"?"live":"break"}
+  else if(action==="final"){if(!confirm("Segnare la partita come conclusa?"))return;s.clock_running=false;s.clock_anchor=null;s.status="final"}
+  else if(action==="names"){s.home=$("edit-home").value.trim().slice(0,28)||s.home;s.away=$("edit-away").value.trim().slice(0,28)||s.away}
+  else if(action==="undo"){if(!undoHistory.length)return toast("Nessuna azione da annullare");const old=undoHistory.pop();settle(old);Object.assign(s,old)}
+  g=s;draw();busy=true;
+  try{const d=await rpc("save",{p_id:id,p_token:token,p_game:s,p_expected_version:version});stamp(d);status("ONLINE",true);if(action!=="undo"){undoHistory.push(previous);if(undoHistory.length>25)undoHistory.shift()}}
+  catch(e){g=previous;draw();status("ERRORE RETE",false);toast(e.message);await fetchLatest(true).catch(()=>{})}
+  finally{busy=false}
+ }).catch(e=>{busy=false;toast(e.message)});
+}
+async function copy(text){try{await navigator.clipboard.writeText(text);toast("Link copiato")}catch{prompt("Copia il link:",text)}}
+function init(){
+ if(overlay){document.documentElement.classList.add("overlay-page");$("main").remove()}
+ if(!overlay){
+  $("create").addEventListener("click",create);
+  document.addEventListener("click",e=>{const b=e.target.closest("[data-do]");if(b)change(b.dataset.do)});
+  $("copy-overlay").addEventListener("click",()=>copy(makeUrl("overlay",false)));
+  $("copy-control").addEventListener("click",()=>copy(makeUrl("control",true)));
+  $("new-game").addEventListener("click",()=>location.href=location.pathname);
+  $("save-names").addEventListener("click",()=>change("names"));
+  $("edit-home").value="ASM70";$("edit-away").value="";
+ }
+ if(id){
+  if(!overlay){
+   if(!token)try{token=localStorage.getItem("asm70-basket-token-"+id)||""}catch{}
+   if(token){saveToken();if(params.has("key")){const u=new URL(location.href);u.searchParams.delete("key");history.replaceState({},"",u)}}
+   else{status("SOLA LETTURA",false);document.querySelectorAll("[data-do],#save-names").forEach(b=>b.disabled=true)}
+  }
+  fetchLatest(true).then(()=>{if(!overlay&&token)status("ONLINE",true)}).catch(e=>{status("NON CONNESSO",false);toast(e.message)});
+ }
+ if(!overlay)status(id?"CONNESSIONE...":"PRONTO",true);
+ setInterval(drawClock,180);
+ setInterval(()=>{if(id&&!busy)fetchLatest(false).then(()=>{if(!overlay&&token)status("ONLINE",true)}).catch(()=>{if(!overlay)status("RETE ASSENTE",false)})},overlay?1200:3000);
+ document.addEventListener("visibilitychange",()=>{if(!document.hidden&&id&&!busy)fetchLatest(false).catch(()=>{})});
+}
+init();
+})();
+</script></body></html>
