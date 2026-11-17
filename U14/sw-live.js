@@ -1,10 +1,10 @@
 /* ASM70 Live Stats shell cache v1. Only same-origin static app assets, never Supabase APIs. */
-const CACHE='asm70-u14-live-v20261107-2';
+const CACHE='asm70-u14-live-v20261117-pdf-1';
 const SHELL=[
   './live.html',
   './live.css',
   './live-v2.css?v=20261102-cloud-1',
-  './live-v2.js?v=20261101-final-report-1',
+  './live-v2.js?v=20261117-pdf-1',
   './live-quick.js?v=20261101-final-report-1',
   './live-cloud.js?v=20261107-cloud-2'
 ];
