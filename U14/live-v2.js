@@ -86,10 +86,12 @@ function renderSavedGames(){
       '<div class="setupNote">'+esc(d||'Data non disponibile')+' · '+data.our+'–'+data.opp+'</div></div>'+
       '<div class="savedGameBtns">'+
       '<button class="miniBtn orange" data-review-game="'+esc(rec.archiveId)+'">Analisi</button>'+
+      '<button class="miniBtn" data-pdf-game="'+esc(rec.archiveId)+'">PDF</button>'+
       '<button class="miniBtn" data-open-game="'+esc(rec.archiveId)+'">Riapri</button>'+
       '<button class="miniBtn red" data-delete-game="'+esc(rec.archiveId)+'">Elimina</button></div></div>';
   }).join('');
   box.querySelectorAll('[data-review-game]').forEach(b=>b.onclick=()=>showArchivedReview(b.dataset.reviewGame));
+  box.querySelectorAll('[data-pdf-game]').forEach(b=>b.onclick=()=>{const rec=getArchive().find(g=>g.archiveId===b.dataset.pdfGame);if(rec)exportStatsPdf(rec)});
   box.querySelectorAll('[data-open-game]').forEach(b=>b.onclick=()=>loadArchived(b.dataset.openGame));
   box.querySelectorAll('[data-delete-game]').forEach(b=>b.onclick=()=>deleteArchived(b.dataset.deleteGame));
 }
@@ -415,6 +417,53 @@ function undo(){if(!S||!S.events.length)return toast('Nulla da annullare');let e
 $('#quickUndo').onclick=undo;$('#historyUndo').onclick=undo;
 $('#clearEvents').onclick=()=>{if(confirm('Azzero tutta la cronologia? Anche i punteggi torneranno a 0.')){S.events=[];save();renderAll()}};
 $$('.nav [data-tab]').forEach(b=>b.onclick=()=>{$$('.nav [data-tab]').forEach(x=>x.classList.toggle('on',x===b));['live','history','stats'].forEach(t=>$('#tab'+t[0].toUpperCase()+t.slice(1)).classList.toggle('hidden',b.dataset.tab!==t));if(b.dataset.tab==='history')renderEvents();if(b.dataset.tab==='stats')renderStats()});
+
+
+function exportStatsPdf(game){
+  if(!game)return;
+  const r=reviewData(game),t=r.totals;
+  const events=Array.isArray(game.events)?game.events:[];
+  const opponents=Array.isArray(game.opponents)?game.opponents:[];
+  const count=(side,type,pid)=>events.reduce((n,e)=>n+(((e.side||'us')===side&&e.type===type&&(pid===undefined||e.playerId===pid))?1:0),0);
+  const points=(side,pid)=>events.reduce((n,e)=>n+(((e.side||'us')===side&&(pid===undefined||e.playerId===pid))?(pointsByType[e.type]||0):0),0);
+  const shoot=(side,pid,x)=>{const m=count(side,x+'M',pid),miss=count(side,x+'X',pid);return m+'/'+(m+miss)};
+  const dateRaw=game.gameDate||String(game.finalizedAt||game.createdAt||'').slice(0,10);
+  let dateLabel=dateRaw||'Data non disponibile';
+  if(/^\d{4}-\d{2}-\d{2}$/.test(dateRaw)){const a=dateRaw.split('-').map(Number);dateLabel=new Date(a[0],a[1]-1,a[2],12).toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}
+  const delta=r.our-r.opp,outcome=delta>0?'VITTORIA':delta<0?'SCONFITTA':'PARITÀ';
+  const fgM=t.twoM+t.threeM,fgX=t.twoX+t.threeX;
+  const ourRows=r.rows.map(p=>'<tr><td><b>#'+esc(p.num)+'</b> '+esc(p.name||'Giocatore')+'</td><td><b>'+p.pt+'</b></td><td>'+p.ftM+'/'+(p.ftM+p.ftX)+'</td><td>'+p.twoM+'/'+(p.twoM+p.twoX)+'</td><td>'+p.threeM+'/'+(p.threeM+p.threeX)+'</td><td>'+p.rd+'</td><td>'+p.ro+'</td><td><b>'+p.r+'</b></td><td>'+p.ast+'</td><td>'+p.rec+'</td><td>'+p.to+'</td><td>'+p.blk+'</td><td>'+p.f+'</td><td>'+p.fs+'</td><td><b>'+p.val+'</b></td></tr>').join('');
+  let assignedOpp=0;
+  const oppRows=opponents.map(p=>{
+    const rd=count('opp','RD',p.id),ro=count('opp','RO',p.id),pt=points('opp',p.id);assignedOpp+=pt;
+    return '<tr><td><b>#'+esc(p.num)+'</b> '+esc(p.name||'Avversario')+'</td><td><b>'+pt+'</b></td><td>'+shoot('opp',p.id,'1')+'</td><td>'+shoot('opp',p.id,'2')+'</td><td>'+shoot('opp',p.id,'3')+'</td><td>'+(rd+ro)+'</td><td>'+count('opp','AST',p.id)+'</td><td>'+count('opp','STL',p.id)+'</td><td>'+count('opp','TO',p.id)+'</td><td>'+count('opp','BLK',p.id)+'</td><td>'+count('opp','FOUL',p.id)+'</td></tr>';
+  }).join('');
+  const unknown=Math.max(0,r.opp-assignedOpp);
+  const oppBody=(oppRows||'<tr><td colspan="11">Nessun dato individuale avversario registrato.</td></tr>')+(unknown?'<tr class="mutedrow"><td>Punti non attribuiti a un numero</td><td><b>'+unknown+'</b></td><td colspan="9"></td></tr>':'');
+  const quarters=r.quarters.map(q=>'<div><span>Q'+q.q+'</span><b>'+q.us+' - '+q.opp+'</b></div>').join('');
+  const report='<!doctype html><html lang="it"><head><meta charset="utf-8"><title>ASM70 Stats - '+esc(game.opponent||'Avversari')+' - '+esc(dateRaw||'partita')+'</title><style>'+
+    '@page{size:A4 landscape;margin:9mm}*{box-sizing:border-box}body{font-family:Arial,Helvetica,sans-serif;color:#172033;margin:0;font-size:10px}'+
+    'h1{margin:0;font-size:20px}h2{font-size:13px;margin:14px 0 6px;padding:6px 8px;background:#172033;color:#fff}'+
+    '.head{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:3px solid #ff6a00;padding-bottom:7px;margin-bottom:9px}.meta{text-align:right;color:#59677b}'+
+    '.score{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:14px;border:1px solid #cad3df;border-radius:9px;padding:10px 16px;margin-bottom:8px}.team{text-align:center;font-size:14px;font-weight:700}.pts{font-size:30px;font-weight:900;display:block;margin-top:2px}.out{text-align:center;font-weight:900;font-size:14px}.out small{display:block;color:#66758a;font-size:9px;margin-top:3px}'+
+    '.quarters{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:7px 0}.quarters div,.kpis div{border:1px solid #d7dee8;border-radius:6px;padding:5px 7px;text-align:center}.quarters span,.kpis span{display:block;color:#68768a;font-size:8px}.quarters b{font-size:12px}.kpis{display:grid;grid-template-columns:repeat(8,1fr);gap:5px;margin-bottom:8px}.kpis b{display:block;font-size:11px;margin-top:2px}'+
+    'table{width:100%;border-collapse:collapse;page-break-inside:auto}tr{page-break-inside:avoid}th,td{border:1px solid #d6dde7;padding:4px 4px;text-align:center}th{background:#eef2f7;font-size:8px}td:first-child,th:first-child{text-align:left}.mutedrow td{background:#f7f9fc;color:#59677b}.note{font-size:8px;color:#657386;margin-top:5px;line-height:1.35}.footer{margin-top:8px;padding-top:5px;border-top:1px solid #d7dee8;color:#7a8798;font-size:8px;text-align:right}'+
+    '@media print{button{display:none!important}}'+
+    '</style></head><body>'+
+    '<div class="head"><div><h1>ASM70 · STATISTICHE PARTITA</h1><div>'+esc(dateLabel)+'</div></div><div class="meta">Report generato '+new Date().toLocaleString('it-IT')+'</div></div>'+
+    '<div class="score"><div class="team">'+esc(game.team||'ASM70')+'<span class="pts">'+r.our+'</span></div><div class="out">'+outcome+'<small>Scarto '+(delta>0?'+':'')+delta+'</small></div><div class="team">'+esc(game.opponent||'Avversari')+'<span class="pts">'+r.opp+'</span></div></div>'+
+    '<div class="quarters">'+quarters+'</div>'+
+    '<div class="kpis"><div><span>PALLE PERSE</span><b>'+t.to+'</b></div><div><span>ASSIST</span><b>'+t.ast+'</b></div><div><span>RIMBALZI</span><b>'+t.r+'</b></div><div><span>RECUPERI</span><b>'+t.rec+'</b></div><div><span>TL</span><b>'+reviewLabelShooting(t.ftM,t.ftX)+'</b></div><div><span>2PT</span><b>'+reviewLabelShooting(t.twoM,t.twoX)+'</b></div><div><span>3PT</span><b>'+reviewLabelShooting(t.threeM,t.threeX)+'</b></div><div><span>TIRO CAMPO</span><b>'+reviewPercentage(fgM,fgX)+'</b></div></div>'+
+    '<h2>ASM70</h2><table><thead><tr><th>Giocatore</th><th>PT</th><th>TL</th><th>2PT</th><th>3PT</th><th>RD</th><th>RO</th><th>RT</th><th>AST</th><th>REC</th><th>PR</th><th>BLK</th><th>F</th><th>FS</th><th>VAL*</th></tr></thead><tbody>'+ourRows+'</tbody></table>'+
+    '<div class="note">* VAL = punti + rimbalzi + assist + recuperi + stoppate + falli subiti - tiri sbagliati - palle perse - falli commessi. È un indice statistico indicativo, non un voto.</div>'+
+    '<h2>AVVERSARI</h2><table><thead><tr><th>Numero</th><th>PT</th><th>TL</th><th>2PT</th><th>3PT</th><th>RT</th><th>AST</th><th>REC</th><th>PR</th><th>BLK</th><th>F</th></tr></thead><tbody>'+oppBody+'</tbody></table>'+
+    '<div class="footer">ASM70 U14 · Live Stats</div></body></html>';
+  const w=window.open('','_blank');
+  if(!w){toast('Popup bloccato: abilita le finestre popup per creare il PDF');return}
+  w.document.open();w.document.write(report);w.document.close();w.focus();
+  setTimeout(()=>{try{w.print()}catch(e){}},350);
+}
+if($('#exportPdf'))$('#exportPdf').onclick=()=>{if(S)exportStatsPdf(S)};
 
 $('#exportCsv').onclick=()=>{
   if(!S)return;
