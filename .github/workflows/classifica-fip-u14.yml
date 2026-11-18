@@ -1,0 +1,25 @@
+name: Classifica FIP U14
+on:
+  schedule:
+    - cron: '17 */3 * * *'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Leggi classifica ufficiale FIP
+        run: python scripts/update_fip_u14.py
+      - name: Pubblica soltanto la classifica se cambiata
+        run: |
+          git add U14/classifica-fip.json
+          if git diff --cached --quiet; then exit 0; fi
+          git -c user.name='ASM70 FIP Bot' -c user.email='actions@users.noreply.github.com' commit -m 'Aggiorna classifica FIP U14'
+          git push
