@@ -2,7 +2,7 @@
   "source": "FIP",
   "girone": "Under 14 Maschile Regionale - Girone I",
   "url": "https://fip.it/risultati/?group=campionati-regionali&regione_codice=LO&comitato_codice=PBG&sesso=M&codice_campionato=U14S/M&codice_fase=1&codice_girone=85648&codice_ar=0&giornata=5",
-  "updated_at": "2026-11-18T09:07:14+00:00",
+  "updated_at": "2026-11-22T11:30:09+00:00",
   "teams": [
     {
       "posizione": 1,
@@ -27,22 +27,22 @@
     {
       "posizione": 3,
       "squadra": "CARPE DIEM BASKET",
-      "punti": 4,
-      "giocate": 5,
-      "vinte": 2,
+      "punti": 6,
+      "giocate": 6,
+      "vinte": 3,
       "perse": 3,
-      "pf": 310,
-      "ps": 289
+      "pf": 383,
+      "ps": 338
     },
     {
       "posizione": 4,
       "squadra": "BASKET LECCO",
       "punti": 4,
-      "giocate": 5,
+      "giocate": 6,
       "vinte": 2,
-      "perse": 3,
-      "pf": 260,
-      "ps": 322
+      "perse": 4,
+      "pf": 309,
+      "ps": 395
     },
     {
       "posizione": 5,
