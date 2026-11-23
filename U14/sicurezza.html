@@ -86,7 +86,7 @@
   function setSession(data){
     if(!data?.access_token)return;
     session={...(session||{}),...data};
-    if(!session.expires_at && session.expires_in)session.expires_at=Math.floor(Date.now()/1000)+Number(session.expires_in);
+    if(!data.expires_at && data.expires_in)session.expires_at=Math.floor(Date.now()/1000)+Number(data.expires_in);
     localStorage.setItem(SESSION_KEY,JSON.stringify(session));
   }
   async function request(path,method='GET',body=null,authorized=true){
