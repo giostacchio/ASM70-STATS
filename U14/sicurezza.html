@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#0f172a">
+  <title>ASM70 U14 — Sicurezza account</title>
+  <style>
+    :root{font-family:system-ui,-apple-system,Segoe UI,sans-serif;color:#172033;background:#eef2f7}
+    *{box-sizing:border-box}body{margin:0}.wrap{width:min(650px,100%);margin:0 auto;padding:15px}
+    .hero{background:linear-gradient(130deg,#0f172a,#155eef);color:white;border-radius:18px;padding:20px}
+    .hero h1{font-size:24px;margin:0 0 8px}.hero p{margin:0;opacity:.9}
+    .card{background:white;border:1px solid #d8e0eb;border-radius:16px;padding:20px;margin:14px 0}
+    h2{font-size:19px;margin:0 0 12px}p{line-height:1.5}.muted{color:#64748b;font-size:14px}
+    label{display:block;font-size:13px;font-weight:750;margin:12px 0 5px}
+    input{display:block;width:100%;font:inherit;font-size:17px;padding:12px;border-radius:10px;border:1px solid #a9b6c9}
+    button,.button{border:0;border-radius:10px;background:#155eef;color:#fff;font:inherit;font-weight:750;padding:11px 15px;cursor:pointer;text-decoration:none;display:inline-block}
+    .secondary{background:#e8eefb;color:#1647ac}.row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:15px}
+    .hidden{display:none!important}.notice{border-radius:11px;padding:12px 14px;background:#eaf4ff;color:#173a6b;font-size:14px;line-height:1.5}
+    .notice.warn{background:#fff7e6;color:#6d4700}.notice.ok{background:#e7f9ef;color:#126739}
+    #qr{width:min(265px,100%);height:auto;display:block;margin:18px auto;border:12px solid #fff}
+    .secret{font:600 14px ui-monospace,monospace;overflow-wrap:anywhere;display:block;background:#f4f6fa;padding:10px;border-radius:8px}
+    footer{color:#64748b;font-size:12px;margin:20px 0 40px}a{color:#155eef}
+  </style>
+</head>
+<body>
+<main class="wrap">
+  <header class="hero"><h1>🛡️ Sicurezza ASM70 U14</h1><p>Verifica in due passaggi tramite app Authenticator</p></header>
+  <section class="card"><div class="notice warn"><strong>Attivazione in due fasi.</strong> Qui puoi registrare e collaudare il secondo fattore. Le regole del database saranno rese obbligatorie solo dopo che avrai confermato che funziona. L'accesso attuale rimane invariato durante la preparazione.</div></section>
+
+  <section id="login" class="card hidden">
+    <h2>1. Entra con l'account Admin</h2>
+    <p class="muted">Usa le stesse credenziali dell'area Admin U14. La pagina non salva la password: viene verificata da Supabase.</p>
+    <label for="email">Email</label><input type="email" id="email" autocomplete="username">
+    <label for="password">Password</label><input type="password" id="password" autocomplete="current-password">
+    <div class="row"><button id="signIn">Accedi</button></div>
+  </section>
+
+  <section id="account" class="card hidden">
+    <h2>2. Account amministratore</h2>
+    <p id="accountLabel"></p>
+    <div id="status" class="notice"></div>
+    <div id="startRow" class="row hidden"><button id="startEnrollment">Registra il secondo fattore</button></div>
+    <div id="challengeRow" class="row hidden"><button id="startChallenge">Verifica il codice del telefono</button></div>
+  </section>
+
+  <section id="enroll" class="card hidden">
+    <h2>3. Collega il Pixel 10a</h2>
+    <ol>
+      <li>Apri Google Authenticator, Microsoft Authenticator o un'altra app TOTP sul telefono.</li>
+      <li>Aggiungi un account e inquadra il QR qui sotto. Se stai visualizzando la pagina sullo stesso telefono, utilizza la chiave manuale.</li>
+      <li>Inserisci il codice temporaneo di 6 cifre generato dall'app.</li>
+    </ol>
+    <img id="qr" alt="Codice QR per registrare il secondo fattore dell'account ASM70">
+    <label>Chiave manuale (se non puoi scansionare il QR)</label>
+    <code id="secret" class="secret"></code>
+    <p class="muted">Non condividere il QR o la chiave: consentono di generare i tuoi codici di accesso.</p>
+    <label for="enrollCode">Codice a 6 cifre</label><input id="enrollCode" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="one-time-code">
+    <div class="row"><button id="verifyEnrollment">Conferma registrazione</button></div>
+  </section>
+
+  <section id="challenge" class="card hidden">
+    <h2>Verifica del secondo fattore</h2>
+    <p>Apri l'app Authenticator e inserisci il codice corrente per confermare il possesso del telefono.</p>
+    <label for="challengeCode">Codice a 6 cifre</label><input id="challengeCode" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="one-time-code">
+    <div class="row"><button id="verifyChallenge">Verifica codice</button></div>
+  </section>
+
+  <section class="card"><div id="message" class="notice" role="status" aria-live="polite">Controllo della sessione in corso…</div>
+    <div class="row"><a class="button secondary" href="admin.html">← Torna all'Admin</a><button class="secondary" id="signOut">Esci da questo dispositivo</button></div>
+  </section>
+  <footer>Fase di predisposizione MFA. Non rappresenta ancora la conferma che tutte le operazioni amministrative richiedano il secondo fattore.</footer>
+</main>
+<script>
+(() => {
+  'use strict';
+  const BASE='https://gtiescrhzsctcyfjuixq.supabase.co';
+  const KEY='sb_publishable_W1Ygs4iWPPv8UUTtjUMetA_TA14SEc-';
+  const SESSION_KEY='u14_lite_session_v1';
+  const $=id=>document.getElementById(id);
+  let session=null,user=null,factorId=null,verificationFactorId=null,busy=false;
+  const show=(id,visible)=>$(id).classList.toggle('hidden',!visible);
+  const message=(value,error=false)=>{const el=$('message');el.textContent=value;el.className='notice'+(error?' warn':'')};
+  try{session=JSON.parse(localStorage.getItem(SESSION_KEY)||'null')}catch(_){session=null}
+
+  function setSession(data){
+    if(!data?.access_token)return;
+    session={...(session||{}),...data};
+    if(!session.expires_at && session.expires_in)session.expires_at=Math.floor(Date.now()/1000)+Number(session.expires_in);
+    localStorage.setItem(SESSION_KEY,JSON.stringify(session));
+  }
+  async function request(path,method='GET',body=null,authorized=true){
+    const headers={'apikey':KEY,'Content-Type':'application/json'};
+    if(authorized){if(!session?.access_token)throw Error('Accesso richiesto');headers.Authorization='Bearer '+session.access_token}
+    const r=await fetch(BASE+'/auth/v1/'+path,{method,headers,body:body===null?undefined:JSON.stringify(body),cache:'no-store'});
+    const data=await r.json().catch(()=>({}));
+    if(!r.ok)throw Error(data.msg||data.error_description||data.message||data.error||('Errore HTTP '+r.status));
+    return data;
+  }
+  async function refreshSession(){
+    if(!session?.refresh_token)return false;
+    try{const data=await request('token?grant_type=refresh_token','POST',{refresh_token:session.refresh_token},false);setSession(data);return true}
+    catch(_){return false}
+  }
+  async function ensureSession(){
+    if(!session?.access_token)return false;
+    if(session.expires_at && session.expires_at<Date.now()/1000+45 && !await refreshSession())return false;
+    try{user=await request('user');return true}
+    catch(_){if(await refreshSession()){try{user=await request('user');return true}catch(__){}}return false}
+  }
+  async function isAdmin(){
+    const r=await fetch(BASE+'/rest/v1/rpc/is_u14_admin',{method:'POST',headers:{'apikey':KEY,'Authorization':'Bearer '+session.access_token,'Content-Type':'application/json'},body:'{}',cache:'no-store'});
+    if(!r.ok)throw Error('Impossibile verificare il ruolo amministratore');
+    return await r.json()===true;
+  }
+  function verifiedFactors(){return (user?.factors||[]).filter(f=>f.factor_type==='totp'&&f.status==='verified')}
+  async function showAccount(){
+    if(!await ensureSession()){
+      show('login',true);show('account',false);message('Accedi per registrare il secondo fattore.');return;
+    }
+    if(!await isAdmin()){
+      show('login',false);show('account',false);message('Questo account non ha i permessi di amministratore U14.',true);return;
+    }
+    $('accountLabel').textContent='Account autorizzato: '+(user.email||'Admin U14');
+    show('login',false);show('account',true);show('enroll',false);show('challenge',false);
+    const factors=verifiedFactors();
+    factorId=factors.length?factors[0].id:null;
+    show('startRow',!factorId);show('challengeRow',!!factorId);
+    $('status').textContent=factorId?'Un secondo fattore è già registrato. Prova un codice per verificarne il funzionamento.':'Nessun secondo fattore ancora registrato. Avvia la procedura per associare il tuo telefono.';
+    message('Accesso Admin verificato. Il blocco MFA del database non è ancora stato attivato.');
+  }
+  async function action(fn){
+    if(busy)return;busy=true;
+    try{await fn()}catch(e){message('Operazione non riuscita: '+e.message,true)}
+    finally{busy=false}
+  }
+  $('signIn').onclick=()=>action(async()=>{
+    const email=$('email').value.trim(),password=$('password').value;
+    if(!email||!password)throw Error('Inserisci email e password');
+    setSession(await request('token?grant_type=password','POST',{email,password},false));
+    $('password').value='';await showAccount();
+  });
+  $('startEnrollment').onclick=()=>action(async()=>{
+    if(!await ensureSession()||!await isAdmin())throw Error('Sessione amministratore non valida');
+    const data=await request('factors','POST',{factor_type:'totp',friendly_name:'ASM70 Pixel 10a'});
+    verificationFactorId=data.id;
+    if(!verificationFactorId||!data.totp?.qr_code)throw Error('Supabase non ha restituito il QR di registrazione');
+    const svg=data.totp.qr_code;
+    $('qr').src=svg.startsWith('data:image/')?svg:'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
+    $('secret').textContent=data.totp.secret||'Chiave non disponibile';
+    show('enroll',true);show('challenge',false);
+    message('Inquadra il QR oppure inserisci la chiave nell’app e conferma il codice.');
+  });
+  async function verifyCode(id,code){
+    if(!/^[0-9]{6}$/.test(code))throw Error('Inserisci le 6 cifre del codice');
+    const challenge=await request('factors/'+encodeURIComponent(id)+'/challenge','POST',{});
+    if(!challenge.id)throw Error('Impossibile creare la verifica');
+    const verified=await request('factors/'+encodeURIComponent(id)+'/verify','POST',{challenge_id:challenge.id,code});
+    setSession(verified);
+    return verified;
+  }
+  $('verifyEnrollment').onclick=()=>action(async()=>{
+    if(!verificationFactorId)throw Error('Avvia prima la registrazione');
+    await verifyCode(verificationFactorId,$('enrollCode').value.trim());
+    $('enrollCode').value='';$('secret').textContent='';$('qr').removeAttribute('src');
+    user=await request('user');
+    show('enroll',false);await showAccount();
+    message('Secondo fattore registrato correttamente! Avvisa ChatGPT per completare la fase finale del blocco MFA sul database.');
+  });
+  $('startChallenge').onclick=()=>{show('challenge',true);show('enroll',false);$('challengeCode').focus();message('Inserisci il codice dall’app Authenticator.')};
+  $('verifyChallenge').onclick=()=>action(async()=>{
+    if(!factorId)throw Error('Nessun fattore verificato trovato');
+    await verifyCode(factorId,$('challengeCode').value.trim());
+    $('challengeCode').value='';show('challenge',false);
+    message('Codice del secondo fattore verificato correttamente! Comunica l’esito per completare il blocco server.');
+  });
+  $('signOut').onclick=()=>action(async()=>{
+    if(session?.access_token){try{await request('logout','POST',{})}catch(_){}}
+    localStorage.removeItem(SESSION_KEY);session=null;user=null;
+    show('account',false);show('enroll',false);show('challenge',false);show('login',true);
+    message('Disconnesso da questo dispositivo.');
+  });
+  showAccount().catch(e=>{show('login',true);message('Verifica iniziale non riuscita: '+e.message,true)});
+})();
+</script>
+</body>
+</html>
