@@ -21,6 +21,7 @@
 <button id="navAttendance" class="navbtn active" onclick="showPage('attendance')">📋 Presenze</button>
 <button id="navRoster" class="navbtn" onclick="showPage('roster')">👥 Rosa</button>
 <button id="navStats" class="navbtn" onclick="showPage('stats')">📊 Statistiche</button>
+<a class="btn navbtn" href="./sviluppo.html" style="text-decoration:none;white-space:nowrap">🎯 Analisi giocatori</a>
 </div>
 <section id="pageAttendance" class="page active">
 <div class="toolbar"><button class="primary" onclick="openEventModal()">📅 Nuova data</button><button onclick="markAllPresent()">✅ Tutti presenti</button><button onclick="window.print()">🖨️ Stampa</button><button onclick="exportCSV()">📊 CSV</button><button onclick="exportJSON()">💾 Backup</button><label class="btn" style="display:inline-flex;align-items:center;margin:0">📥 Importa<input id="importFile" type="file" accept=".json" style="display:none" onchange="importJSON(event)"></label></div>

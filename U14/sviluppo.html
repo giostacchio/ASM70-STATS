@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#0b1220">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <title>ASM70 U14 · Analisi e sviluppo giocatori</title>
+  <link rel="stylesheet" href="./sviluppo.css?v=1">
+</head>
+<body>
+  <div class="shell">
+    <aside class="sidebar">
+      <a href="./presenze.html" class="logo"><span class="logo-ball">70</span><span><b>ASM70</b><small>PLAYER DEVELOPMENT</small></span></a>
+      <div class="side-caption">STRUMENTI U14</div>
+      <nav class="side-links" aria-label="Sezioni">
+        <button class="side-tab active" data-tab="live">◉ <span>Rilevazione</span></button>
+        <button class="side-tab" data-tab="players">♧ <span>Giocatori</span></button>
+        <button class="side-tab" data-tab="plans">◎ <span>Piani individuali</span></button>
+        <button class="side-tab" data-tab="analysis">▥ <span>Analisi squadra</span></button>
+      </nav>
+      <div class="side-bottom">
+        <div class="private-callout">🔒 <span><b>Area Admin ASM70</b><small>Valutazioni riservate</small></span></div>
+        <a href="./presenze.html" class="return-link">← Torna a Presenze</a>
+      </div>
+    </aside>
+
+    <div class="app-main">
+      <header class="topbar">
+        <a href="./presenze.html" class="top-back">← Presenze U14</a>
+        <span class="breadcrumb">STAFF TECNICO <i>/</i> U14 <i>/</i> <b id="sectionBreadcrumb">Rilevazione</b></span>
+        <button id="connectionStatus" class="connection-pill" type="button" title="Tocca per riprovare la sincronizzazione">● Collegamento</button>
+      </header>
+
+      <main class="main-content">
+        <section class="page active" id="pageLive">
+          <div class="page-heading"><div><div class="overline"><span class="green-dot"></span> MODALITÀ CAMPO</div><h1>Osservazione <em>live.</em></h1><p>Registra subito cosa succede. Approfondisci dopo l'allenamento.</p></div><button class="outline" id="newSessionBtn">＋ Nuovo allenamento</button></div>
+          <div class="session-banner"><div class="session-symbol">▦</div><div class="session-info"><b id="sessionName">Pronto per iniziare</b><span id="sessionDetails">Nessuna sessione selezionata</span></div><select id="sessionPicker" aria-label="Allenamento" class="session-picker"></select></div>
+          <div class="metrics"><div class="metric"><span>OSSERVAZIONI</span><strong id="countEvents">0</strong><small>Nella sessione</small></div><div class="metric"><span>GIOCATORI VISTI</span><strong id="countPlayers">0/15</strong><small>Copertura rosa</small></div><div class="metric"><span>AZIONI CORRETTE</span><strong id="countPositive">0</strong><small>Feedback positivi</small></div></div>
+          <div class="live-grid">
+            <section class="panel"><div class="panel-heading"><div><div class="step">FASE 01</div><h2>Chi stai osservando?</h2></div><span id="rosterCount" class="small-pill">— giocatori</span></div><div id="playerPicker" class="player-grid"><div class="empty">Caricamento rosa ASM70…</div></div></section>
+            <section class="panel input-panel"><div class="panel-heading"><div><div class="step">FASE 02</div><h2>Che cosa è successo?</h2></div><span id="chosenPlayer" class="small-pill">Scegli un ragazzo</span></div>
+              <label class="field-title">AREA TECNICA</label><div id="areaPicker" class="option-row"></div>
+              <label class="field-title spaced">FONDAMENTALE / LETTURA</label><div id="skillPicker" class="skill-grid"></div>
+              <label class="field-title spaced">ERRORE SPECIFICO <small>· solo per difficoltà</small></label><div id="issuePicker" class="option-row"></div>
+              <label class="field-title spaced">CONTESTO</label><div id="contextPicker" class="option-row"></div>
+              <details class="note-details"><summary>✎ Aggiungi nota facoltativa</summary><textarea id="eventNote" rows="2" maxlength="700" placeholder="Cosa hai osservato? Perché potrebbe essere successo?"></textarea></details>
+              <div class="log-actions"><button id="logGood" class="log-good" disabled>✓ <span><b>Corretta</b><small>Esecuzione positiva</small></span></button><button id="logIssue" class="log-bad" disabled>! <span><b>Da correggere</b><small>Registra la difficoltà</small></span></button></div>
+              <div class="help-mini">Un errore osservato non è un giudizio sul giocatore.</div>
+            </section>
+          </div>
+          <section class="panel event-panel"><div class="panel-heading"><div><div class="step">REGISTRO LIVE</div><h2>Ultime osservazioni</h2></div><span class="small-pill" id="eventsCount">0 eventi</span></div><div id="recentEvents"></div></section>
+        </section>
+
+        <section class="page" id="pagePlayers"><div class="page-heading"><div><div class="overline">ROSA SINCRONIZZATA</div><h1>La tua <em>squadra.</em></h1><p>I giocatori sono letti dall'archivio Presenze: nessuna seconda anagrafica da compilare.</p></div><button id="reloadRoster" class="outline">⟳ Aggiorna rosa</button></div><div class="toolbar"><input id="searchPlayer" placeholder="Cerca un giocatore…" aria-label="Cerca giocatore"><span id="playerTotal">—</span></div><div id="playerCards" class="roster-cards"></div></section>
+
+        <section class="page" id="pagePlans"><div class="page-heading"><div><div class="overline">MIGLIORAMENTO INDIVIDUALE</div><h1>Dal dato <em>all'azione.</em></h1><p>Un obiettivo concreto, un esercizio dedicato e una verifica nelle stesse condizioni.</p></div><button class="primary" id="newGoalBtn">＋ Nuovo obiettivo</button></div><div class="metrics"><div class="metric"><span>ATTIVI</span><strong id="goalsActive">0</strong><small>Da sviluppare</small></div><div class="metric"><span>IN LAVORO</span><strong id="goalsWorking">0</strong><small>Esercizi assegnati</small></div><div class="metric"><span>VERIFICATI</span><strong id="goalsDone">0</strong><small>Traguardi raggiunti</small></div></div><div id="goalCards" class="goal-cards"></div></section>
+
+        <section class="page" id="pageAnalysis"><div class="page-heading"><div><div class="overline">LETTURA DATI</div><h1>Analisi <em>della squadra.</em></h1><p>Indizi ricavati dai gesti osservati, da confermare con esercizi comparabili.</p></div><button class="outline" id="exportBackup">↓ Backup JSON</button></div><div class="metrics"><div class="metric"><span>OSSERVAZIONI</span><strong id="allObservations">0</strong><small>Storico</small></div><div class="metric"><span>ALLENAMENTI</span><strong id="allSessions">0</strong><small>Sessioni</small></div><div class="metric"><span>GIOCATORI</span><strong id="allCovered">0/15</strong><small>Almeno una rilevazione</small></div></div><div class="analysis-grid"><section class="panel"><div class="panel-heading"><div class="step">AREE TECNICHE</div><h2>Dove si concentrano le difficoltà</h2></div><div id="areaMetrics"></div><p class="small-note">Le percentuali esprimono la quota di difficoltà sulle opportunità annotate, non un voto al giocatore.</p></section><section class="panel"><div class="panel-heading"><div class="step">PROSSIMI ALLENAMENTI</div><h2>Priorità da verificare</h2></div><div id="topIssues"></div><div class="tip">💡 <span>Con 15 ragazzi, osserva cinque giocatori per seduta in modo approfondito e ruota il gruppo ogni tre allenamenti.</span></div></section></div><section class="panel history-panel"><div class="panel-heading"><div class="step">STORICO</div><h2>Allenamenti registrati</h2></div><div id="sessionHistory"></div></section></section>
+      </main>
+    </div>
+    <nav class="bottom-nav" aria-label="Navigazione mobile"><button class="active" data-tab="live">◉<small>Rilevazione</small></button><button data-tab="players">♧<small>Giocatori</small></button><button data-tab="plans">◎<small>Piani</small></button><button data-tab="analysis">▥<small>Analisi</small></button></nav>
+  </div>
+
+  <div id="authGate" class="auth-gate"><div class="auth-card"><div class="auth-mark">70</div><div class="overline">ASM70 U14 · ACCESSO RISERVATO</div><h2>Analisi giocatori</h2><p>Accedi con le stesse credenziali dell'area Admin ASM70. Se sei già entrato da Presenze, l'accesso sarà automatico.</p><form id="loginForm"><label>Email amministratore<input id="adminEmail" type="email" autocomplete="username" required placeholder="Email Admin"></label><label>Password<input id="adminPassword" type="password" autocomplete="current-password" required placeholder="Password abituale"></label><button class="primary" type="submit">Accedi</button></form><div id="authError" role="alert"></div><a href="./presenze.html">← Torna a Presenze</a></div></div>
+
+  <div id="modal" class="modal" aria-hidden="true"><div class="dialog" role="dialog" aria-modal="true"><div class="dialog-heading"><div><span id="modalEyebrow" class="step"></span><h2 id="modalTitle"></h2></div><button id="modalClose" aria-label="Chiudi">×</button></div><div id="modalBody"></div><div id="modalActions" class="dialog-actions"></div></div></div>
+  <div class="toast" id="toast" role="status"></div>
+  <script src="./sviluppo.js?v=1" defer></script>
+</body>
+</html>
