@@ -2,17 +2,17 @@
   "source": "FIP",
   "girone": "Under 14 Maschile Regionale - Girone I",
   "url": "https://fip.it/risultati/?group=campionati-regionali&regione_codice=LO&comitato_codice=PBG&sesso=M&codice_campionato=U14S/M&codice_fase=1&codice_girone=85648&codice_ar=0&giornata=5",
-  "updated_at": "2026-11-22T11:30:09+00:00",
+  "updated_at": "2026-11-24T13:48:45+00:00",
   "teams": [
     {
       "posizione": 1,
       "squadra": "G.S. GIOVANILE CIVATESE",
-      "punti": 8,
-      "giocate": 4,
-      "vinte": 4,
+      "punti": 10,
+      "giocate": 5,
+      "vinte": 5,
       "perse": 0,
-      "pf": 393,
-      "ps": 153
+      "pf": 471,
+      "ps": 185
     },
     {
       "posizione": 2,
@@ -48,11 +48,11 @@
       "posizione": 5,
       "squadra": "BASKET CLUB TIRANO",
       "punti": 2,
-      "giocate": 5,
+      "giocate": 6,
       "vinte": 1,
-      "perse": 4,
-      "pf": 230,
-      "ps": 392
+      "perse": 5,
+      "pf": 262,
+      "ps": 470
     }
   ]
 }

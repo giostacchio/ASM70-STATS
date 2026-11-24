@@ -2,7 +2,7 @@
   "source": "FIP",
   "girone": "Under 14 Maschile Regionale - Girone I",
   "url": "https://fip.it/risultati/?group=campionati-regionali&regione_codice=LO&comitato_codice=PBG&sesso=M&codice_campionato=U14S/M&codice_fase=1&codice_girone=85648&codice_ar=0&giornata=5",
-  "updated_at": "2026-11-21T19:20:01+00:00",
+  "updated_at": "2026-11-24T13:48:45+00:00",
   "matches": [
     {
       "id": "007507",
@@ -168,9 +168,9 @@
       "ora": "17:00",
       "casa": "G.S. GIOVANILE CIVATESE",
       "ospite": "BASKET CLUB TIRANO",
-      "punti_casa": null,
-      "punti_ospite": null,
-      "giocata": false
+      "punti_casa": 78,
+      "punti_ospite": 32,
+      "giocata": true
     },
     {
       "id": "007522",
