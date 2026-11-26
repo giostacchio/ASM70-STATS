@@ -1,0 +1,82 @@
+/* ASM70 Live Stat V3: partita in una sola schermata, mobile-first. */
+.v3LegacyLink{color:#ffd5b3;font-weight:800;font-size:13px}
+html.v3Playing,body.v3Playing{height:100%;overflow:hidden;overscroll-behavior:none}
+.v3Game:not(.hidden){height:100vh;height:100dvh;min-height:0;display:flex;flex-direction:column;overflow:hidden}
+.v3Game .topbar{position:relative;flex:0 0 auto;z-index:35}
+.v3Game .scorebar{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:5px;padding:3px 7px;max-width:none}
+.v3Game .teamBox{min-width:0}
+.v3Game .teamBox>div{min-width:0}
+.v3Game .teamName{display:block;font-size:9px;max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.v3Game .score{font-size:27px;line-height:1.1}
+.v3Game .scoreCenter{gap:3px;padding:3px 4px;border-radius:9px}
+.v3Game .period{height:34px;min-width:33px;font-size:11px;border-radius:7px}
+.v3Game .clock{min-width:61px;font-size:19px}
+.v3Game .clockBtn{height:34px;width:34px;border-radius:7px}
+.v3Game .cloudInlineBar{display:none}
+.v3Toolbar{height:37px;display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:5px;align-items:center;padding:1px 6px 4px}
+.v3Toolbar button{height:32px;border:1px solid #43526a;background:#17253a;color:#f2f6fd;border-radius:8px;font-size:11px;font-weight:900;padding:0 9px;white-space:nowrap}
+.v3Toolbar #v3RepeatToggle[aria-pressed="true"]{background:#4a2b0f;border-color:#ff983b;color:#ffe8d0}
+.v3Toolbar #v3LastLabel{min-width:0;font-size:11px;font-weight:800;color:#cbd8e9;white-space:nowrap;text-overflow:ellipsis;overflow:hidden;text-align:center}
+.v3Game .nav{display:none;position:absolute;top:100%;right:5px;z-index:60;width:min(345px,calc(100vw - 10px));max-width:none;max-height:calc(100dvh - 100px);overflow-y:auto;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;padding:10px;background:#101a2a;border:1px solid #4f617a;border-radius:0 0 14px 14px;box-shadow:0 16px 30px #0008}
+.v3Game .nav.v3Open{display:grid}
+.v3Game .nav button,.v3Game .nav a{min-height:42px;display:grid;place-items:center;text-align:center;border:1px solid #334a68;background:#17253a;color:white;border-radius:9px;text-transform:uppercase;text-decoration:none;font-size:11px;font-weight:900;padding:6px}
+.v3Game .nav #v3MenuCloudStatus{grid-column:1/-1;font-size:10px;color:#b2c1d6;text-align:center}
+.v3Game .content{flex:1;min-height:0;width:100%;max-width:none;padding:3px 4px calc(4px + env(safe-area-inset-bottom));overflow:hidden}
+.v3Game #tabLive:not(.hidden){height:100%;min-height:0;display:flex;flex-direction:column;gap:4px}
+.v3Game .v3MainPanel{flex:1;min-height:0;display:flex;flex-direction:column;border-radius:10px}
+.v3Game .v3MainPanel .panelHead{flex:0 0 auto;min-height:29px;padding:3px 7px;align-items:center}
+.v3Game .panelTitle{font-size:10px;letter-spacing:.15px}
+.v3Game .v3MainPanel .courtHead{flex-wrap:nowrap;gap:4px}
+.v3Game .foulBadge{font-size:9px;padding:4px 5px;white-space:nowrap}
+.v3Game #quickUndo{min-height:25px;padding:3px 6px;font-size:10px;white-space:nowrap}
+.v3Game .quickCapture{flex:none;border-top:none;padding:3px 4px 4px;background:#0e1724}
+.v3Game .quickCaptureHead{display:none}
+.v3Game .simpleCapture .quickActions{height:clamp(164px,25dvh,208px);display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-template-rows:repeat(4,minmax(0,1fr));gap:3px}
+.v3Game .simpleCapture .quickActions button{min-width:0;min-height:0;height:100%;padding:1px 2px;border-radius:8px;font-size:clamp(10px,2.6vw,13px);font-weight:1000;letter-spacing:0;line-height:1.05}
+.v3Game .quickActions button.v3Armed{box-shadow:inset 0 0 0 2px #fff,0 0 0 1px #fff;filter:brightness(1.4)}
+.v3Roster{flex:1;min-height:0;display:flex;flex-direction:column;background:#101c2d;border-top:1px solid #30415a}
+.v3RosterHead{flex:0 0 22px;display:flex;align-items:center;justify-content:space-between;gap:5px;padding:1px 6px;color:#b5c5d9}
+.v3RosterHead strong{font-size:10px;letter-spacing:.3px}
+.v3RosterHead span{min-width:0;font-size:10px;font-weight:900;color:#ffd29c;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.v3RosterGrid{flex:1;min-height:0;display:grid;grid-template-columns:repeat(var(--v3-cols,3),minmax(0,1fr));grid-template-rows:repeat(var(--v3-rows,5),minmax(0,1fr));gap:3px;padding:0 4px 4px;overflow:hidden}
+.v3Player{display:flex;align-items:center;justify-content:flex-start;gap:5px;min-width:0;min-height:0;height:100%;border:1px solid #41516a;border-radius:8px;background:#1a293d;color:#fff;padding:1px 5px;touch-action:manipulation;text-align:left}
+.v3Player:active{background:#304f74;transform:scale(.985)}
+.v3Player:focus-visible,.v3Game button:focus-visible{outline:2px solid #fff;outline-offset:-2px}
+.v3Player .v3Num{flex:none;min-width:29px;font-size:clamp(17px,5vw,24px);font-weight:1000;color:#ffb574;text-align:center;line-height:1}
+.v3Player .v3Name{min-width:0;font-size:clamp(11px,2.7vw,13px);font-weight:850;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.v3Player.v3Flash{background:#116a4b;border-color:#37eda4}
+.v3RosterGrid .v3NoPlayers{grid-column:1/-1;display:grid;place-items:center;font-size:13px;color:#aabbd0}
+.v3Game .opponentQuickPanel{flex:0 0 43px;min-height:43px;display:flex;align-items:center;gap:5px;margin:0;padding:3px 5px;border-radius:9px}
+.v3Game .opponentQuickHead{flex:1;min-width:0;display:block;margin:0}
+.v3Game .opponentQuickHead strong{font-size:10px;line-height:1.15;display:block}
+.v3Game .opponentQuickActions{flex:0 0 auto;display:grid;grid-template-columns:repeat(3,51px);gap:4px}
+.v3Game .opponentQuickActions button{height:35px;min-height:35px;border-radius:8px;font-size:19px;padding:0}
+.v3Game .quickHistory{display:none}
+.v3Game.v3Review .content{overflow-y:auto;overscroll-behavior:contain}
+.v3Game.v3Review #tabHistory,.v3Game.v3Review #tabStats{height:auto;min-height:100%}
+.v3Game.v3Review .statsWrap{overflow-x:auto}
+@media(max-height:710px){
+  .v3Game .simpleCapture .quickActions{height:clamp(130px,24dvh,166px)}
+  .v3Game .scorebar{padding:1px 7px}
+  .v3Game .scoreCenter{padding:1px 3px}
+  .v3Toolbar{height:33px;padding-bottom:2px}
+  .v3Toolbar button{height:29px}
+  .v3Game .v3MainPanel .panelHead{min-height:25px}
+  .v3RosterHead{flex-basis:19px}
+  .v3Game .opponentQuickPanel{flex-basis:39px;min-height:39px}
+  .v3Game .opponentQuickActions button{height:33px;min-height:33px}
+}
+@media(max-width:360px){
+  .v3Game .teamName{max-width:70px;font-size:8px}
+  .v3Game .clock{min-width:55px;font-size:17px}
+  .v3Game .v3MainPanel .panelTitle{font-size:9px}
+  .v3Game .v3MainPanel .foulBadge{font-size:8px}
+  .v3Player{padding:1px 3px;gap:3px}
+  .v3Player .v3Num{min-width:25px}
+  .v3Game .opponentQuickActions{grid-template-columns:repeat(3,45px)}
+}
+@media(orientation:landscape) and (max-height:520px){
+  .v3Game .simpleCapture .quickActions{height:90px;grid-template-columns:repeat(7,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr))}
+  .v3RosterGrid{grid-template-columns:repeat(5,minmax(0,1fr))}
+  .v3Game .teamName{display:none}
+}

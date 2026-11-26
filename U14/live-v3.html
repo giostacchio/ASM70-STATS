@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#07101f">
+<title>ASM70 · Live Stats V3 · Turbo</title>
+<link rel="stylesheet" href="./live.css">
+<link rel="stylesheet" href="./live-v2.css?v=20261102-cloud-1">
+<link rel="stylesheet" href="./live-v3.css?v=20261126-mobile-1">
+</head>
+<body>
+<div id="setupView" class="setup">
+  <div class="setupCard">
+    <div class="setupHead"><h1>ASM70 · Live Stats V3</h1><p>Modalità Turbo per smartphone: azioni e giocatori nella stessa schermata, senza scorrimento durante la partita.</p><p><a class="v3LegacyLink" href="./live.html">Torna alla V2</a></p></div>
+    <div class="setupBody">
+      <div class="formgrid">
+        <div class="field full"><label>Partita dal calendario U14</label><select id="gameSelect"><option value="">Partita manuale</option></select></div>
+        <div class="field"><label>La mia squadra</label><input id="teamInput" value="ASM70 U14"></div>
+        <div class="field"><label>Avversario</label><input id="oppInput" placeholder="Nome avversario"></div>
+        <div class="field"><label>Campo</label><select id="homeAway"><option value="home">Casa</option><option value="away">Trasferta</option></select></div>
+        <div class="field"><label>Durata quarto</label><select id="periodLen"><option value="600">10:00</option><option value="480">8:00</option></select></div>
+      </div>
+
+      <div class="rosterSetup">
+        <div class="setupSectionHead"><b>Giocatori ASM70</b><span id="loadStatus">caricamento…</span></div>
+        <p class="rosterHelp">Seleziona chi partecipa. Puoi modificare nome e maglia oppure eliminare un nominativo. Le modifiche valgono per le nuove partite e restano su questo dispositivo.</p>
+        <div id="rosterGrid" class="rosterGrid"></div>
+        <div class="addPlayer"><input id="newNum" type="number" min="0" max="99" inputmode="numeric" placeholder="Maglia #"><input id="newName" placeholder="Nome e cognome"><button id="addPlayer">+ Aggiungi</button></div>
+        <div id="excludedRosterSection" class="hidden"><button id="toggleExcludedRoster" type="button" class="rosterRestoreToggle">Mostra giocatori esclusi</button><div id="excludedRoster" class="rosterRestoreGrid hidden"></div></div>
+      </div>
+
+      <div class="rosterSetup oppSetup hidden">
+        <div class="setupSectionHead"><b>Numeri avversari</b><span>manuali per questa partita</span></div>
+        <div class="oppQuickAdd"><input id="oppNumbers" inputmode="numeric" placeholder="Es. 4, 5, 7, 8, 10, 11, 12"><button id="buildOpp">Carica numeri</button></div>
+        <div id="oppRosterPreview" class="oppRosterPreview"></div>
+        <div class="setupNote">Basta inserire i numeri di maglia separati da virgola o spazio. Non vengono aggiunti al roster ASM70.</div>
+      </div>
+
+      <div class="rosterSetup cloudSetup">
+        <div class="setupSectionHead"><b>Archivio online Supabase</b><span id="cloudSetupStatus" class="cloudBadge">Solo locale</span></div>
+        <p class="rosterHelp">Le partite vengono registrate prima sul dispositivo. Con lo stesso account U14, lo storico locale viene caricato automaticamente su Supabase e le partite già presenti online vengono riportate anche sul dispositivo che stai usando.</p>
+        <div id="cloudLoginForm" class="cloudLoginForm">
+          <label>Email responsabile U14<input type="email" id="cloudEmail" autocomplete="username" placeholder="Email già usata nell'area Admin"></label>
+          <label>Password<input type="password" id="cloudPassword" autocomplete="current-password" placeholder="Password Supabase"></label>
+          <button id="cloudLogin" type="button" class="startBtn">Accedi e sincronizza</button>
+        </div>
+        <div id="cloudLoggedIn" class="cloudLoggedIn hidden">
+          <span>Collegato: <b id="cloudLoggedInName"></b></span>
+          <button id="cloudSignOut" type="button" class="miniBtn">Disconnetti</button>
+        </div>
+        <button id="cloudSyncNow" class="cloudSyncButton" type="button">↻ Sincronizza ora</button>
+        <div id="cloudGames" class="cloudGames"><div class="setupNote">Accedi per vedere le partite online.</div></div>
+      </div>
+      <div class="rosterSetup">
+        <div class="setupSectionHead"><b>Storico partite salvate</b><button id="backupArchive" class="miniBtn orange">Backup storico JSON</button></div>
+        <div id="savedGames"><div class="setupNote">Nessuna partita salvata.</div></div>
+      </div>
+
+      <div id="finalReviewPanel" class="finalReviewPanel hidden" aria-live="polite">
+        <div class="finalReviewBar"><strong>RISULTATO FINALE E ANALISI</strong><button type="button" id="closeFinalReview" class="miniBtn">Chiudi</button></div>
+        <div id="finalReviewContent"></div>
+      </div>
+      <div class="setupActions"><button id="resumeBtn" class="subtleBtn hidden">Riprendi partita</button><button id="startBtn" class="startBtn">Inizia partita</button></div>
+    </div>
+  </div>
+</div>
+
+<div id="gameView" class="app v3Game hidden">
+  <div class="topbar">
+    <div class="scorebar">
+      <div class="teamBox"><div><div id="teamNameTop" class="teamName">ASM70</div><div id="ourScore" class="score homeScore">0</div></div></div>
+      <div class="scoreCenter"><button id="periodBtn" class="period">Q1</button><div id="clock" class="clock">10:00</div><button id="clockBtn" class="clockBtn">▶</button></div>
+      <div class="teamBox away"><div style="text-align:right"><div id="oppNameTop" class="teamName">AVVERSARI</div><div id="oppScore" class="score oppScoreColor">0</div></div></div>
+    </div>
+    <div class="v3Toolbar">
+      <button id="v3RepeatToggle" type="button" aria-pressed="false">RIPETI: NO</button>
+      <span id="v3LastLabel" role="status" aria-live="polite">Pronto per registrare</span>
+      <button id="v3MenuToggle" type="button" aria-expanded="false" aria-controls="v3Menu">☰ MENU</button>
+    </div>
+    <div class="cloudInlineBar"><span id="cloudGameStatus" class="cloudBadge">Solo locale · accedi per salvare online</span></div>
+    <div class="nav" id="v3Menu"><button data-tab="live" class="on">Partita</button><button data-tab="history">Cronologia</button><button data-tab="stats">Statistiche</button><button id="setupBack">Impostazioni</button><button id="finishGame">🏁 Fine / Salva</button><button id="newGame" class="red">Nuova partita</button><a href="./live.html">Apri V2</a><span id="v3MenuCloudStatus">Lo stato cloud è visibile in Impostazioni</span></div>
+  </div>
+
+  <main class="content">
+    <section id="tabLive">
+      <div class="panel v3MainPanel">
+        <div class="panelHead"><div class="panelTitle">ASM70 · REGISTRA AZIONE</div><div class="courtHead"><span id="teamFouls" class="foulBadge">Falli ASM70 Q1: 0</span><button id="quickUndo" class="miniBtn">↶ Annulla</button></div></div>
+        <div id="quickCapture" class="quickCapture simpleCapture">
+          <div class="quickCaptureHead">
+            <div><b id="quickTitle">Tocca l'azione ASM70</b><span id="quickHint">Poi il giocatore già visibile nella griglia.</span></div>
+          </div>
+                    <div class="quickActions">
+            <button data-qact="1M" class="qgood">+1</button>
+            <button data-qact="2M" class="qgood">+2</button>
+            <button data-qact="3M" class="qgood">+3</button>
+            <button data-qact="1X" class="qmiss" aria-label="Tiro libero sbagliato">TL ✕</button>
+            <button data-qact="2X" class="qmiss" aria-label="Tiro da due sbagliato">2PT ✕</button>
+            <button data-qact="3X" class="qmiss" aria-label="Tiro da tre sbagliato">3PT ✕</button>
+            <button data-qact="RD" class="qorange">RIMB. DIF.</button>
+            <button data-qact="RO" class="qorange">RIMB. OFF.</button>
+            <button data-qact="AST" class="qblue">ASSIST</button>
+            <button data-qact="STL" class="qblue">RECUPERO</button>
+            <button data-qact="TO" class="qred">PALLA PERSA</button>
+            <button data-qact="FOUL" class="qred">FALLO</button>
+            <button data-qact="FREC" class="qorange">FALLO SUB.</button>
+            <button id="quickMore" class="qmore">STOPPATA</button>
+          </div>
+        </div>
+        <div id="v3Roster" class="v3Roster">
+          <div class="v3RosterHead"><strong>GIOCATORI ASM70</strong><span id="v3ActionLabel">Scegli prima un'azione</span></div>
+          <div id="v3RosterGrid" class="v3RosterGrid" role="group" aria-label="Giocatori ASM70, selezione senza finestre"></div>
+        </div>
+        <span id="oppFouls" class="hidden"></span>
+        <button id="addOppInGame" class="hidden" type="button" tabindex="-1">+ numero avversario</button>
+      </div>
+
+      <div class="panel opponentQuickPanel">
+        <div class="opponentQuickHead"><strong>PUNTI AVVERSARI</strong></div>
+        <div class="opponentQuickActions" aria-label="Punti avversari">
+          <button type="button" data-opp-unknown="1" aria-label="Assegna 1 punto agli avversari">+1</button>
+          <button type="button" data-opp-unknown="2" aria-label="Assegna 2 punti agli avversari">+2</button>
+          <button type="button" data-opp-unknown="3" aria-label="Assegna 3 punti agli avversari">+3</button>
+        </div>
+      </div>
+
+      <div class="quickHistory panel">
+        <div class="panelHead"><div><div class="panelTitle">Principio</div><div class="panelSub">Tocca l’azione → scegli il numero → la cronologia si aggiorna da sola.</div></div><button class="miniBtn" data-tab-jump="history">Vedi cronologia</button></div>
+      </div>
+    </section>
+
+    <section id="tabHistory" class="hidden">
+      <div class="panel historyPanel">
+        <div class="panelHead"><div><div class="panelTitle">Cronologia completa della partita</div><div class="panelSub">Quarto, tempo, squadra, numero, azione e punteggio dopo ogni evento.</div></div><div class="statsTop"><button id="historyUndo" class="miniBtn">↶ Annulla ultima</button><button id="exportHistory" class="miniBtn orange">Esporta cronologia</button><button id="clearEvents" class="miniBtn red">Azzera</button></div></div>
+        <div class="historyHead"><span>Tempo</span><span>Squadra</span><span>#</span><span>Azione</span><span>Score</span></div>
+        <div id="eventList" class="eventList fullHistory"></div>
+      </div>
+    </section>
+
+    <section id="tabStats" class="hidden">
+      <div class="panel">
+        <div class="panelHead"><div><div class="panelTitle">Statistiche e valutazione</div><div id="statsScore" class="statsScore"></div></div><div class="statsTop"><button id="exportPdf" class="miniBtn">PDF statistiche</button><button id="exportCsv" class="miniBtn orange">Esporta CSV</button></div></div>
+        <div id="statsSummary" class="statsSummary"></div>
+        <div class="statsSectionTitle">ASM70</div>
+        <div class="statsWrap"><table class="statsTable"><thead><tr><th>Giocatore</th><th>PT</th><th>TL</th><th>2PT</th><th>3PT</th><th>RD</th><th>RO</th><th>RT</th><th>AST</th><th>REC</th><th>PR</th><th>BLK</th><th>F</th><th>FS</th><th>VAL*</th></tr></thead><tbody id="statsBody"></tbody></table></div>
+        <div class="statsNote">* VAL: indice indicativo = punti + rimbalzi + assist + recuperi + stoppate + falli subiti − tiri sbagliati − palle perse − falli commessi. Non è un voto e dipende dalle azioni registrate.</div>
+        <div class="statsSectionTitle oppTitle">Avversari</div>
+        <div class="statsWrap"><table class="statsTable oppStatsTable"><thead><tr><th>Numero</th><th>PT</th><th>TL</th><th>2PT</th><th>3PT</th><th>RT</th><th>AST</th><th>REC</th><th>PR</th><th>BLK</th><th>F</th></tr></thead><tbody id="oppStatsBody"></tbody></table></div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div id="rosterEditBack" class="sheetBack hidden" role="dialog" aria-modal="true" aria-labelledby="rosterEditTitle">
+  <div class="sheet rosterEditSheet">
+    <div class="sheetTop"><div id="rosterEditTitle" class="sheetName">Modifica giocatore</div><button id="closeRosterEdit" type="button" class="close" aria-label="Chiudi modifica">×</button></div>
+    <div class="rosterEditForm">
+      <label for="editRosterName">Nome giocatore</label>
+      <input id="editRosterName" type="text" autocomplete="off" />
+      <label for="editRosterNum">Numero di maglia</label>
+      <input id="editRosterNum" type="number" min="0" max="99" inputmode="numeric" />
+      <div id="editRosterError" class="rosterEditError" aria-live="polite"></div>
+      <div class="rosterEditButtons"><button id="cancelRosterEdit" type="button" class="miniBtn">Annulla</button><button id="saveRosterEdit" type="button" class="startBtn">Salva modifiche</button></div>
+    </div>
+  </div>
+</div>
+<div id="pickBack" class="sheetBack hidden" role="dialog" aria-modal="true" aria-labelledby="pickTitle">
+  <div class="sheet pickSheet">
+    <div class="sheetTop"><div><div id="pickTitle" class="sheetName">Scegli il giocatore</div><div id="pickHint" class="sheetMini">Tocca il numero per registrare.</div></div><button id="closePick" class="close" aria-label="Annulla la scelta">×</button></div>
+    <div id="pickGrid" class="pickGrid" role="group" aria-label="Giocatori ASM70 in ordine alfabetico"></div>
+    <div class="pickFooter">Se non vedi un nome, scorri l’elenco.</div>
+  </div>
+</div>
+<div id="actionBack" class="sheetBack hidden"><div class="sheet"><div class="sheetTop"><div class="sheetPlayer"><div id="sheetNum" class="sheetNum">0</div><div><div id="sheetName" class="sheetName">Giocatore</div><div id="sheetMini" class="sheetMini"></div></div></div><button id="closeSheet" class="close">×</button></div><div id="actions" class="actions"></div></div></div>
+<div id="subBack" class="sheetBack hidden"><div class="sheet"><div class="sheetTop"><div><div class="sheetName">Cambio</div><div id="subTitle" class="sheetMini"></div></div><button id="closeSub" class="close">×</button></div><div id="subGrid" class="subGrid"></div></div></div>
+<div id="toast" class="toast hidden"></div>
+
+<script src="./live-v2.js?v=20261117-pdf-1"></script>
+<script src="./live-v3-quick.js?v=20261126-mobile-1"></script>
+<script src="./live-cloud.js?v=20261107-cloud-2"></script>
+<script>
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>navigator.serviceWorker.register('./sw-live.js').catch(()=>{}));
+}
+document.querySelectorAll('[data-tab-jump]').forEach(b=>b.onclick=()=>{const target=b.dataset.tabJump;const tab=document.querySelector(`.nav [data-tab="${target}"]`);if(tab)tab.click()});
+</script>
+</body>
+</html>

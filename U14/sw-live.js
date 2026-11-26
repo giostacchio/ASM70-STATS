@@ -1,11 +1,14 @@
 /* ASM70 Live Stats shell cache v1. Only same-origin static app assets, never Supabase APIs. */
-const CACHE='asm70-u14-live-v20261117-pdf-1';
+const CACHE='asm70-u14-live-v20261126-v3-mobile-1';
 const SHELL=[
   './live.html',
+  './live-v3.html',
   './live.css',
   './live-v2.css?v=20261102-cloud-1',
+  './live-v3.css?v=20261126-mobile-1',
   './live-v2.js?v=20261117-pdf-1',
   './live-quick.js?v=20261101-final-report-1',
+  './live-v3-quick.js?v=20261126-mobile-1',
   './live-cloud.js?v=20261107-cloud-2'
 ];
 self.addEventListener('install',event=>{
@@ -31,7 +34,7 @@ self.addEventListener('fetch',event=>{
   if(req.method!=='GET')return;
   const url=new URL(req.url);
   if(url.origin!==self.location.origin)return;
-  const staticNames=['live.html','live.css','live-v2.css','live-v2.js','live-quick.js','live-cloud.js'];
+  const staticNames=['live.html','live-v3.html','live.css','live-v2.css','live-v3.css','live-v2.js','live-quick.js','live-v3-quick.js','live-cloud.js'];
   if(!staticNames.some(n=>url.pathname.endsWith('/U14/'+n)))return;
   event.respondWith((async()=>{
     const cache=await caches.open(CACHE);
