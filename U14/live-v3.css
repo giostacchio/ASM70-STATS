@@ -39,18 +39,18 @@ html.v3Playing,body.v3Playing{height:100%;overflow:hidden;overscroll-behavior:no
 .v3RosterHead strong{font-size:10px;letter-spacing:.3px}
 .v3RosterHead span{min-width:0;font-size:10px;font-weight:900;color:#ffd29c;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .v3RosterGrid{flex:1;min-height:0;display:grid;grid-template-columns:repeat(var(--v3-cols,3),minmax(0,1fr));grid-template-rows:repeat(var(--v3-rows,5),minmax(0,1fr));gap:3px;padding:0 4px 4px;overflow:hidden}
-.v3Player{display:flex;align-items:center;justify-content:flex-start;gap:5px;min-width:0;min-height:0;height:100%;border:1px solid #41516a;border-radius:8px;background:#1a293d;color:#fff;padding:1px 5px;touch-action:manipulation;text-align:left}
+.v3Player{display:flex;align-items:center;justify-content:flex-start;gap:3px;min-width:0;min-height:0;height:100%;border:1px solid #41516a;border-radius:8px;background:#1a293d;color:#fff;padding:1px 4px;touch-action:manipulation;text-align:left}
 .v3Player:active{background:#304f74;transform:scale(.985)}
 .v3Player:focus-visible,.v3Game button:focus-visible{outline:2px solid #fff;outline-offset:-2px}
 .v3Player .v3Num{flex:none;min-width:29px;font-size:clamp(17px,5vw,24px);font-weight:1000;color:#ffb574;text-align:center;line-height:1}
-.v3Player .v3Name{min-width:0;font-size:clamp(11px,2.7vw,13px);font-weight:850;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.v3Player .v3Name{min-width:0;font-size:clamp(10px,2.5vw,12px);font-weight:850;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .v3Player.v3Flash{background:#116a4b;border-color:#37eda4}
 .v3RosterGrid .v3NoPlayers{grid-column:1/-1;display:grid;place-items:center;font-size:13px;color:#aabbd0}
-.v3Game .opponentQuickPanel{flex:0 0 43px;min-height:43px;display:flex;align-items:center;gap:5px;margin:0;padding:3px 5px;border-radius:9px}
+.v3Game .topbar .opponentQuickPanel{height:43px;min-height:43px;display:flex;align-items:center;gap:5px;margin:0;padding:3px 7px;border-radius:0;border-left:0;border-right:0;border-bottom:0;box-shadow:none;background:#101f35}
 .v3Game .opponentQuickHead{flex:1;min-width:0;display:block;margin:0}
-.v3Game .opponentQuickHead strong{font-size:10px;line-height:1.15;display:block}
+.v3Game .opponentQuickHead strong{font-size:11px;line-height:1.15;display:block;color:#8eb8ff}
 .v3Game .opponentQuickActions{flex:0 0 auto;display:grid;grid-template-columns:repeat(3,51px);gap:4px}
-.v3Game .opponentQuickActions button{height:35px;min-height:35px;border-radius:8px;font-size:19px;padding:0}
+.v3Game .opponentQuickActions button{height:35px;min-height:35px;border-radius:8px;font-size:19px;padding:0;touch-action:manipulation}
 .v3Game .quickHistory{display:none}
 .v3Game.v3Review .content{overflow-y:auto;overscroll-behavior:contain}
 .v3Game.v3Review #tabHistory,.v3Game.v3Review #tabStats{height:auto;min-height:100%}
@@ -63,7 +63,7 @@ html.v3Playing,body.v3Playing{height:100%;overflow:hidden;overscroll-behavior:no
   .v3Toolbar button{height:29px}
   .v3Game .v3MainPanel .panelHead{min-height:25px}
   .v3RosterHead{flex-basis:19px}
-  .v3Game .opponentQuickPanel{flex-basis:39px;min-height:39px}
+  .v3Game .topbar .opponentQuickPanel{height:39px;min-height:39px}
   .v3Game .opponentQuickActions button{height:33px;min-height:33px}
 }
 @media(max-width:360px){

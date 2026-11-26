@@ -7,7 +7,7 @@
 <title>ASM70 · Live Stats V3 · Turbo</title>
 <link rel="stylesheet" href="./live.css">
 <link rel="stylesheet" href="./live-v2.css?v=20261102-cloud-1">
-<link rel="stylesheet" href="./live-v3.css?v=20261126-mobile-1">
+<link rel="stylesheet" href="./live-v3.css?v=20261126-mobile-2">
 </head>
 <body>
 <div id="setupView" class="setup">
@@ -78,6 +78,14 @@
       <span id="v3LastLabel" role="status" aria-live="polite">Pronto per registrare</span>
       <button id="v3MenuToggle" type="button" aria-expanded="false" aria-controls="v3Menu">☰ MENU</button>
     </div>
+    <div class="panel opponentQuickPanel" role="group" aria-label="Assegna punti agli avversari">
+      <div class="opponentQuickHead"><strong>AVVERSARI</strong></div>
+      <div class="opponentQuickActions">
+        <button type="button" data-opp-unknown="1" aria-label="Assegna 1 punto agli avversari">+1</button>
+        <button type="button" data-opp-unknown="2" aria-label="Assegna 2 punti agli avversari">+2</button>
+        <button type="button" data-opp-unknown="3" aria-label="Assegna 3 punti agli avversari">+3</button>
+      </div>
+    </div>
     <div class="cloudInlineBar"><span id="cloudGameStatus" class="cloudBadge">Solo locale · accedi per salvare online</span></div>
     <div class="nav" id="v3Menu"><button data-tab="live" class="on">Partita</button><button data-tab="history">Cronologia</button><button data-tab="stats">Statistiche</button><button id="setupBack">Impostazioni</button><button id="finishGame">🏁 Fine / Salva</button><button id="newGame" class="red">Nuova partita</button><a href="./live.html">Apri V2</a><span id="v3MenuCloudStatus">Lo stato cloud è visibile in Impostazioni</span></div>
   </div>
@@ -108,20 +116,11 @@
           </div>
         </div>
         <div id="v3Roster" class="v3Roster">
-          <div class="v3RosterHead"><strong>GIOCATORI ASM70</strong><span id="v3ActionLabel">Scegli prima un'azione</span></div>
+          <div class="v3RosterHead"><strong>MAGLIE ASM70</strong><span id="v3ActionLabel">Scegli prima un'azione</span></div>
           <div id="v3RosterGrid" class="v3RosterGrid" role="group" aria-label="Giocatori ASM70, selezione senza finestre"></div>
         </div>
         <span id="oppFouls" class="hidden"></span>
         <button id="addOppInGame" class="hidden" type="button" tabindex="-1">+ numero avversario</button>
-      </div>
-
-      <div class="panel opponentQuickPanel">
-        <div class="opponentQuickHead"><strong>PUNTI AVVERSARI</strong></div>
-        <div class="opponentQuickActions" aria-label="Punti avversari">
-          <button type="button" data-opp-unknown="1" aria-label="Assegna 1 punto agli avversari">+1</button>
-          <button type="button" data-opp-unknown="2" aria-label="Assegna 2 punti agli avversari">+2</button>
-          <button type="button" data-opp-unknown="3" aria-label="Assegna 3 punti agli avversari">+3</button>
-        </div>
       </div>
 
       <div class="quickHistory panel">
@@ -176,7 +175,7 @@
 <div id="toast" class="toast hidden"></div>
 
 <script src="./live-v2.js?v=20261117-pdf-1"></script>
-<script src="./live-v3-quick.js?v=20261126-mobile-1"></script>
+<script src="./live-v3-quick.js?v=20261126-mobile-2"></script>
 <script src="./live-cloud.js?v=20261107-cloud-2"></script>
 <script>
 if('serviceWorker' in navigator){

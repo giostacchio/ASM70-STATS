@@ -62,6 +62,14 @@
     if(!S)return '';
     return S.players.map(p=>String(p.id)+'|'+String(p.num)+'|'+String(p.name)).join('~');
   }
+  function shortPlayerName(player){
+    const name=String(player.name||'Giocatore').trim().replace(/\s+/g,' ');
+    const parts=name.split(' ');
+    if(parts.length<2)return name;
+    // Il nome completo resta nel roster e nell'etichetta accessibile;
+    // in campo mostriamo iniziale + cognome per liberare spazio.
+    return parts.slice(0,-1).map(part=>part.charAt(0)+'.').join('')+' '+parts[parts.length-1];
+  }
   // Non ricreare le tessere ogni secondo quando si aggiorna il cronometro.
   // Così il dito trova sempre lo stesso giocatore nello stesso punto.
   renderPlayers=function(){
@@ -75,7 +83,7 @@
     rosterGrid.style.setProperty('--v3-rows',Math.max(1,Math.ceil(n/cols)));
     rosterGrid.innerHTML=n?S.players.map(p=>
       '<button type="button" class="v3Player" data-v3-pid="'+esc(p.id)+'" title="'+esc(p.name)+'" aria-label="Registra azione per '+esc(p.name)+' maglia '+esc(p.num)+'">'+
-      '<strong class="v3Num">#'+esc(p.num)+'</strong><span class="v3Name">'+esc(p.name||'Giocatore')+'</span></button>'
+      '<strong class="v3Num">#'+esc(p.num)+'</strong><span class="v3Name">'+esc(shortPlayerName(p))+'</span></button>'
     ).join(''):'<div class="v3NoPlayers">Nessun giocatore convocato</div>';
   };
   renderOpponents=function(){};
