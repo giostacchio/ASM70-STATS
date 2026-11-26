@@ -1,14 +1,14 @@
 /* ASM70 Live Stats shell cache v1. Only same-origin static app assets, never Supabase APIs. */
-const CACHE='asm70-u14-live-v20261126-v3-mobile-1';
+const CACHE='asm70-u14-live-v20261126-v3-mobile-3';
 const SHELL=[
   './live.html',
   './live-v3.html',
   './live.css',
   './live-v2.css?v=20261102-cloud-1',
-  './live-v3.css?v=20261126-mobile-1',
+  './live-v3.css?v=20261126-mobile-3',
   './live-v2.js?v=20261117-pdf-1',
   './live-quick.js?v=20261101-final-report-1',
-  './live-v3-quick.js?v=20261126-mobile-1',
+  './live-v3-quick.js?v=20261126-mobile-3',
   './live-cloud.js?v=20261107-cloud-2'
 ];
 self.addEventListener('install',event=>{

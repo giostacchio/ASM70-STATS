@@ -4,15 +4,16 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1,user-scalable=no">
 <meta name="theme-color" content="#07101f">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <title>ASM70 · Live Stats V3 · Turbo</title>
 <link rel="stylesheet" href="./live.css">
 <link rel="stylesheet" href="./live-v2.css?v=20261102-cloud-1">
-<link rel="stylesheet" href="./live-v3.css?v=20261126-mobile-2">
+<link rel="stylesheet" href="./live-v3.css?v=20261126-mobile-3">
 </head>
 <body>
 <div id="setupView" class="setup">
   <div class="setupCard">
-    <div class="setupHead"><h1>ASM70 · Live Stats V3</h1><p>Modalità Turbo per smartphone: azioni e giocatori nella stessa schermata, senza scorrimento durante la partita.</p><p><a class="v3LegacyLink" href="./live.html">Torna alla V2</a></p></div>
+    <div class="setupHead"><h1>ASM70 · Live Stats V3.2</h1><p>Modalità Turbo per smartphone: azioni e giocatori nella stessa schermata, senza scorrimento durante la partita.</p><p><a class="v3LegacyLink" href="./live.html">Torna alla V2</a></p></div>
     <div class="setupBody">
       <div class="formgrid">
         <div class="field full"><label>Partita dal calendario U14</label><select id="gameSelect"><option value="">Partita manuale</option></select></div>
@@ -93,7 +94,7 @@
   <main class="content">
     <section id="tabLive">
       <div class="panel v3MainPanel">
-        <div class="panelHead"><div class="panelTitle">ASM70 · REGISTRA AZIONE</div><div class="courtHead"><span id="teamFouls" class="foulBadge">Falli ASM70 Q1: 0</span><button id="quickUndo" class="miniBtn">↶ Annulla</button></div></div>
+        <div class="panelHead"><div class="panelTitle">ASM70 V3.2 · AZIONE</div><div class="courtHead"><span id="teamFouls" class="foulBadge">Falli ASM70 Q1: 0</span><button id="quickUndo" class="miniBtn">↶ Annulla</button></div></div>
         <div id="quickCapture" class="quickCapture simpleCapture">
           <div class="quickCaptureHead">
             <div><b id="quickTitle">Tocca l'azione ASM70</b><span id="quickHint">Poi il giocatore già visibile nella griglia.</span></div>
@@ -175,7 +176,7 @@
 <div id="toast" class="toast hidden"></div>
 
 <script src="./live-v2.js?v=20261117-pdf-1"></script>
-<script src="./live-v3-quick.js?v=20261126-mobile-2"></script>
+<script src="./live-v3-quick.js?v=20261126-mobile-3"></script>
 <script src="./live-cloud.js?v=20261107-cloud-2"></script>
 <script>
 if('serviceWorker' in navigator){

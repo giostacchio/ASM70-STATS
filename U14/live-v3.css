@@ -55,8 +55,14 @@ html.v3Playing,body.v3Playing{height:100%;overflow:hidden;overscroll-behavior:no
 .v3Game.v3Review .content{overflow-y:auto;overscroll-behavior:contain}
 .v3Game.v3Review #tabHistory,.v3Game.v3Review #tabStats{height:auto;min-height:100%}
 .v3Game.v3Review .statsWrap{overflow-x:auto}
+@media(max-width:520px){
+  .v3Game .simpleCapture .quickActions{height:clamp(142px,22dvh,178px)}
+  .v3RosterGrid{gap:2px}
+  .v3Player .v3Num{min-width:25px;font-size:clamp(16px,4.6vw,21px)}
+  .v3Player .v3Name{font-size:10px}
+}
 @media(max-height:710px){
-  .v3Game .simpleCapture .quickActions{height:clamp(130px,24dvh,166px)}
+  .v3Game .simpleCapture .quickActions{height:clamp(128px,21dvh,160px)}
   .v3Game .scorebar{padding:1px 7px}
   .v3Game .scoreCenter{padding:1px 3px}
   .v3Toolbar{height:33px;padding-bottom:2px}

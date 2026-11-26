@@ -19,6 +19,14 @@
   const menu=document.querySelector('#v3Menu');
   const menuToggle=document.querySelector('#v3MenuToggle');
 
+  // Compatibilità con vecchi HTML rimasti nella cache del telefono:
+  // sposta comunque i punti avversari sopra le azioni, anche senza nuovo markup.
+  const opponentScorePanel=document.querySelector('.opponentQuickPanel');
+  const toolbar=document.querySelector('.v3Toolbar');
+  if(opponentScorePanel&&toolbar&&opponentScorePanel.parentElement!==toolbar.parentElement){
+    toolbar.insertAdjacentElement('afterend',opponentScorePanel);
+  }
+
   function alpha(a,b){
     return String(a.name||'').localeCompare(String(b.name||''),'it',{sensitivity:'base'})||
       (Number(a.num)||0)-(Number(b.num)||0);
